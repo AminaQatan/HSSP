@@ -167,6 +167,10 @@ CREATE OR REPLACE PACKAGE hsr_roster_pkg AS
   PROCEDURE set_cell       (p_staff_id IN NUMBER, p_date IN DATE, p_value IN VARCHAR2, p_source IN VARCHAR2 DEFAULT 'MANUAL');
   PROCEDURE load_row       (p_staff_id IN NUMBER, p_start IN DATE, p_values IN VARCHAR2, p_source IN VARCHAR2 DEFAULT 'IMPORT');
   FUNCTION  create_period  (p_start IN DATE, p_days IN NUMBER) RETURN NUMBER;
+  -- the half-month (1st-15th or 16th-end) holding p_date; created and filled in if it does not exist yet
+  FUNCTION  ensure_period  (p_date IN DATE) RETURN NUMBER;
+  -- makes sure today's and the next half-month exist (run daily by the scheduler job in section 7)
+  PROCEDURE keep_roster_going;
   PROCEDURE auto_distribute(p_period_id IN NUMBER, p_keep_leave IN VARCHAR2 DEFAULT 'Y', p_keep_entered IN VARCHAR2 DEFAULT 'N');
 
   -- APEX helper: fills hidden items <prefix>H01..H31 with day headings such as "3 Nov TUE"
@@ -374,6 +378,39 @@ CREATE OR REPLACE PACKAGE BODY hsr_roster_pkg AS
     RETURNING period_id INTO l_id;
     RETURN l_id;
   END create_period;
+
+  FUNCTION ensure_period (p_date IN DATE) RETURN NUMBER IS
+    l_day   DATE := TRUNC(p_date);
+    l_id    NUMBER := period_of(TRUNC(p_date));
+    l_start DATE;
+    l_end   DATE;
+    l_edge  DATE;
+  BEGIN
+    IF l_id IS NOT NULL THEN
+      RETURN l_id;
+    END IF;
+    IF EXTRACT(DAY FROM l_day) <= 15 THEN
+      l_start := TRUNC(l_day, 'MM');
+      l_end   := TRUNC(l_day, 'MM') + 14;
+    ELSE
+      l_start := TRUNC(l_day, 'MM') + 15;
+      l_end   := LAST_DAY(l_day);
+    END IF;
+    SELECT MAX(end_date) INTO l_edge FROM hsr_periods WHERE end_date >= l_start AND end_date < l_day;
+    IF l_edge IS NOT NULL THEN l_start := l_edge + 1; END IF;
+    SELECT MIN(start_date) INTO l_edge FROM hsr_periods WHERE start_date <= l_end AND start_date > l_day;
+    IF l_edge IS NOT NULL THEN l_end := l_edge - 1; END IF;
+    l_id := create_period(l_start, l_end - l_start + 1);
+    auto_distribute(l_id);
+    RETURN l_id;
+  END ensure_period;
+
+  PROCEDURE keep_roster_going IS
+    l_id NUMBER;
+  BEGIN
+    l_id := ensure_period(SYSDATE);
+    l_id := ensure_period(SYSDATE + 16);
+  END keep_roster_going;
 
   /* Automatic shift distribution. Same rules as the portal page:
        FIXED  : everyone in the team is off on FIXED_OFF_DAYS
@@ -911,6 +948,18 @@ SELECT duty_date, day_name, team_name, on_duty, min_on_duty, short_by
  WHERE period_id = 1 AND short_by > 0
  ORDER BY duty_date, team_sort;
 
+-- Keep the roster going with no end date: a daily job makes sure today's and
+-- the next half-month exist, with shifts filled in. Remove the -- to create it.
+--   BEGIN
+--     DBMS_SCHEDULER.create_job(
+--       job_name        => 'HSR_KEEP_ROSTER_GOING',
+--       job_type        => 'PLSQL_BLOCK',
+--       job_action      => 'BEGIN hsr_roster_pkg.keep_roster_going; COMMIT; END;',
+--       repeat_interval => 'FREQ=DAILY;BYHOUR=2;BYMINUTE=0',
+--       enabled         => TRUE);
+--   END;
+--   /
+
 -- Try the automatic distribution on the next half month:
 --   DECLARE l_id NUMBER;
 --   BEGIN
@@ -961,6 +1010,9 @@ SELECT duty_date, day_name, team_name, on_duty, min_on_duty, short_by
        Excel and PDF: the grid's Actions > Download gives XLSX and PDF.
                 Attributes > Download > PDF: Page Size A4, Orientation
                 Landscape, so the roster fits one page.
+       Next period: a button NEXT_PERIOD with the process
+                SELECT hsr_roster_pkg.ensure_period(end_date + 1) INTO :P1_PERIOD
+                  FROM hsr_periods WHERE start_date = (SELECT MAX(start_date) FROM hsr_periods);
        Print: a button with Action "Defined by Dynamic Action" running
                 window.print();
        Cell colours: Page > CSS > Inline

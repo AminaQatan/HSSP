@@ -575,7 +575,7 @@ if (!IN_CLAUDE) {
 
 const ui = {
   tab: 'roster', periodId: null, session: null, brush: null, modal: null, dirty: false, readOnly: false, saving: false,
-  undo: [], autoNext: true, distMode: 'new', distStart: null, distLen: 'month', keepLeave: true, keepEntered: false,
+  undo: [], autoNext: true, distMode: 'new', distStart: null, distLen: 'half', keepLeave: true, keepEntered: false,
   lastDist: null, loginError: '', toastTimer: null
 };
 (function restoreSession() {
@@ -919,7 +919,7 @@ function renderMastState() { const el = $('#mast-state'); if (el) el.innerHTML =
 function periodBar(p) {
   const list = sortedPeriods();
   return `<div class="periodbar"><button class="icon-btn" data-act="period-step" data-dir="-1" aria-label="Previous period">${ICON.left}</button>
-    <select id="period-sel" aria-label="Roster period">${list.map(x => `<option value="${esc(x.id)}" ${p && x.id === p.id ? 'selected' : ''}>${esc(periodLabel(x))}</option>`).join('')}</select>
+    <select id="period-sel" aria-label="Roster period">${list.map(x => `<option value="${esc(x.id)}" ${p && x.id === p.id ? 'selected' : ''}>${esc(periodLabel(x))}</option>`).join('')}${isAdmin() ? `<option value="__next">+ Next: ${esc(periodLabel(spanFor(nextStart())))}</option>` : ''}</select>
     <button class="icon-btn" data-act="period-step" data-dir="1" aria-label="Next period">${ICON.right}</button></div>`;
 }
 
@@ -981,7 +981,48 @@ function legendHtml() {
 
 /* ---------- distribute view ---------- */
 function nextStart() { const list = sortedPeriods(); return list.length ? addDays(periodEnd(list[list.length - 1]), 1) : todayYmd(); }
+/* Periods run on forever in half-months: 1st-15th and 16th-end of month. */
+const monthDays = (y, m) => new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+const periodAt = date => S.periods.find(p => p.start <= date && periodEnd(p) >= date);
+function spanFor(date) {
+  const x = dparts(date), base = x.y + '-' + pad(x.m + 1) + '-';
+  let start = base + (x.d <= 15 ? '01' : '16'), end = base + pad(x.d <= 15 ? 15 : monthDays(x.y, x.m));
+  S.periods.forEach(p => {
+    const pe = periodEnd(p);
+    if (pe >= start && pe < date) start = addDays(pe, 1);
+    if (p.start <= end && p.start > date) end = addDays(p.start, -1);
+  });
+  return { start, days: absDay(end) - absDay(start) + 1 };
+}
+function makePeriod(date) {
+  const sp = spanFor(date);
+  const p = { id: 'p' + sp.start, start: sp.start, days: sp.days, cells: {} };
+  S.periods.push(p);
+  distribute(p, { keepLeave: true, keepEntered: false });
+  return p;
+}
+const saveHint = () => IN_CLAUDE ? ' Check it, then press Save changes.' : '';
+function createNext() {
+  snapshot();
+  const p = makePeriod(nextStart());
+  ui.periodId = p.id; touch(); render();
+  toast(`${periodLabel(p)} is ready with shifts filled in.${saveHint()}`, { label: 'Undo', fn: undo });
+}
+function catchUpToToday() {
+  const t = todayYmd();
+  if (periodAt(t)) return;
+  const list = sortedPeriods();
+  if (list.length && periodEnd(list[list.length - 1]) > t) return;
+  snapshot();
+  const made = [];
+  for (let guard = 0; !periodAt(t) && guard < 24; guard++) made.push(makePeriod(nextStart()));
+  if (!made.length) { ui.undo.pop(); return; }
+  ui.periodId = periodAt(t) ? periodAt(t).id : made[made.length - 1].id;
+  touch();
+  setTimeout(() => toast(`${made.length === 1 ? periodLabel(made[0]) + ' was' : made.length + ' new periods were'} created so the roster reaches today.${saveHint()}`, { label: 'Undo', fn: undo }), 60);
+}
 function distLength(start) {
+  if (ui.distLen === 'half') { const x = dparts(start); return (x.d <= 15 ? 15 : monthDays(x.y, x.m)) - x.d + 1; }
   if (ui.distLen === 'month') { const x = dparts(start); const dim = new Date(Date.UTC(x.y, x.m + 1, 0)).getUTCDate(); return dim - x.d + 1; }
   return clamp(+ui.distLen || 15, 1, 31);
 }
@@ -1018,7 +1059,7 @@ function distributeHtml(p) {
       <p class="lead">Choose the period, check each team's rules, then distribute. Mark known leave (AL, PH, PD, C/OFF) in the roster first and it stays in place; days off and shift times are filled in around it.</p>
       <div class="seg" role="group" aria-label="Which period"><button type="button" data-act="dist-mode" data-mode="new" aria-pressed="${ui.distMode === 'new'}">New period</button><button type="button" data-act="dist-mode" data-mode="current" aria-pressed="${ui.distMode === 'current'}">Existing period</button></div>
       ${ui.distMode === 'new' ? `<div class="form-row"><label class="field">First day<input type="date" id="dist-start" value="${esc(start)}"></label>
-        <label class="field">Length<select id="dist-len">${[['month', 'To the end of the month'], ['7', '7 days'], ['14', '14 days'], ['15', '15 days'], ['16', '16 days']].map(o => `<option value="${o[0]}" ${String(ui.distLen) === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></label>
+        <label class="field">Length<select id="dist-len">${[['half', 'Half month (to the 15th or month end)'], ['month', 'To the end of the month'], ['7', '7 days'], ['14', '14 days'], ['15', '15 days'], ['16', '16 days']].map(o => `<option value="${o[0]}" ${String(ui.distLen) === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></label>
         <div class="field"><span>Period</span><b style="min-height:38px;display:flex;align-items:center">${esc(periodLabel(preview))} · ${len} days</b></div></div>`
       : (p ? `<div class="form-row">${periodBar(p)}</div><p class="muted">Redistributing replaces the shifts and days off in ${esc(periodLabel(p))}. Leave stays unless you untick the option below.</p>` : '<p class="muted">There is no period yet.</p>')}
     </div>
@@ -1828,7 +1869,8 @@ app.addEventListener('click', e => {
       const list = sortedPeriods(), p = curPeriod(); if (!p) break;
       const i = list.findIndex(x => x.id === p.id) + (+t.dataset.dir);
       if (i >= 0 && i < list.length) { ui.periodId = list[i].id; render(); }
-      else toast(+t.dataset.dir > 0 ? (isAdmin() ? 'This is the latest period. Create the next one in Auto-distribute.' : 'This is the latest period.') : 'This is the first period.');
+      else if (+t.dataset.dir > 0 && isAdmin()) createNext();
+      else toast(+t.dataset.dir > 0 ? 'The next period has not been published yet.' : 'This is the first period.');
       break;
     }
     case 'brush': { const v = t.dataset.v; ui.brush = ui.brush === v ? null : v; render(); break; }
@@ -1893,7 +1935,7 @@ app.addEventListener('submit', e => {
     const user = S.users.find(x => x.u === normUser(u));
     if (!u.trim() || !pw) { ui.loginError = 'Enter your user ID and password.'; }
     else if (!user || user.hash !== passHash(u, pw)) { ui.loginError = 'That user ID and password do not match. Check the spelling and try again.'; }
-    else { ui.session = { u: user.u, name: user.name, role: user.role || 'ADMIN' }; ui.loginError = ''; ui.tab = 'roster'; }
+    else { ui.session = { u: user.u, name: user.name, role: user.role || 'ADMIN' }; ui.loginError = ''; ui.tab = 'roster'; ui.periodId = null; catchUpToToday(); }
     render();
     if (ui.loginError) { const i = $('#lg-user'); if (i) { i.value = u; $('#lg-pass').focus(); } }
   } else if (f.id === 'add-staff') {
@@ -1919,7 +1961,7 @@ app.addEventListener('submit', e => {
 });
 app.addEventListener('change', e => {
   const t = e.target;
-  if (t.id === 'period-sel') { ui.periodId = t.value; render(); return; }
+  if (t.id === 'period-sel') { if (t.value === '__next') createNext(); else { ui.periodId = t.value; render(); } return; }
   if (t.id === 'auto-next') { ui.autoNext = t.checked; return; }
   if (t.id === 'wo-toggle') { if (ui.modal) ui.modal.wo = t.checked; return; }
   if (t.id === 'dist-start') { if (t.value) { ui.distStart = t.value; render(); } return; }
@@ -1976,7 +2018,8 @@ let rz = null;
 window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { const p = curPeriod(); if (ui.session && ui.tab === 'analysis' && p) drawCharts(p); }, 150); });
 
 /* expose pure functions for testing and the Oracle comparison */
-window.HSR = { sha256, passHash, pv, distribute, analyze, buildXlsx, buildPdf, renderSheetCanvas, periodLabel, buildDocument, embedded: EMBEDDED, get data() { return S; } };
+if (isAdmin()) catchUpToToday();
+window.HSR = { sha256, passHash, pv, distribute, analyze, buildXlsx, buildPdf, renderSheetCanvas, periodLabel, buildDocument, spanFor, makePeriod, embedded: EMBEDDED, get data() { return S; } };
 
 render();
 })();

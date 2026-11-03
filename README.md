@@ -20,6 +20,7 @@ Duty roster portal for the Security Department of Hilton Salalah Resort, built o
 
 - **Roster:** 16 staff in 5 teams (Management, Shift Leaders, Security / Operation, Main Gate, CCTV), with posts and the daily on-duty count per team.
 - **Quick fill:** pick a value (OFF, AL, PH, PD, C/OFF or a start time) and tap cells to fill them. Tapping a single cell opens a panel that moves to the next day after each choice. Undo is always available.
+- **No end date:** the roster runs on in half-months (1st–15th, 16th–end of month). Tap › on the latest period, or choose "+ Next" in the period list, and the next half-month appears with shifts already filled in. When an admin signs in after the last period has ended, the periods up to today are created.
 - **Auto-distribute:** creates the next period, or redistributes one. Each team has its own rule:
   - rotating days off (two together, about a week apart)
   - the same days off for everyone (for example Friday and Saturday)
@@ -70,7 +71,8 @@ Requirements: Oracle Database 19c or later and Oracle APEX 22.2 or later. A free
      COMMIT;
    END;
    ```
-4. Follow section 8 at the end of the script to build the APEX pages:
+4. To keep the roster going on its own, create the daily job in section 7 (`HSR_KEEP_ROSTER_GOING`). It makes sure today's and the next half-month always exist.
+5. Follow section 8 at the end of the script to build the APEX pages:
    - sign-in with `hsr_roster_pkg.authenticate`
    - the roster grid
    - auto-distribute

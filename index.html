@@ -1,0 +1,1983 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><title>Security Roster Portal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Marcellus&display=swap">
+<style id="app-css">
+/* Layout: navy masthead with a gold hairline, a tab rail, then one working canvas per tab.
+   The roster sheet scrolls sideways inside its own frame with a sticky name column;
+   analysis is a two-column card grid that stacks on phones. */
+:root{
+  --bg:#F2F4F8;
+  --surface:#FFFFFF;
+  --surface-2:#F6F8FB;
+  --line:#DDE3EC;
+  --line-2:#C5CFDC;
+  --ink:#13233A;
+  --ink-2:#44546B;
+  --muted:#66768C;
+  --brand:#0C2D5B;
+  --brand-2:#1F5AA6;
+  --brand-ink:#FFFFFF;
+  --brand-soft:#E6EDF7;
+  --gold:#A87A2E;
+  --gold-bright:#C99B4E;
+  --gold-soft:#F6EEDD;
+  --focus:#1F5AA6;
+  --good:#1D7A47;
+  --warn:#9A5A00;
+  --crit:#B3261E;
+  --crit-soft:#FBE3E1;
+  --c-off-bg:#FBEFC8; --c-off-fg:#6B5009;
+  --c-al-bg:#FADCD9;  --c-al-fg:#A3241D;
+  --c-ph-bg:#F8D7EF;  --c-ph-fg:#8B1E74;
+  --c-pd-bg:#E7DEF8;  --c-pd-fg:#52329A;
+  --c-coff-bg:#D4EEE8; --c-coff-fg:#11604F;
+  --c-wo-bg:#DAF1DE;  --c-wo-fg:#1B6A33;
+  --c-na-bg:#E8ECF2;  --c-na-fg:#8492A6;
+  --c-night:#ECF1FA;
+  --s1:#1F5AA6; --s2:#B7791F; --s3:#0F8F7E; --s4:#8B4FA3; --s5:#D2603F;
+  --shadow:0 1px 2px rgba(12,45,91,.06),0 10px 28px rgba(12,45,91,.10);
+  --font-display:"Marcellus","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-ar:"IBM Plex Sans Arabic","Noto Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  --radius:10px;
+  --mast-h:72px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1220; --surface:#111C2D; --surface-2:#0E1828; --line:#22324A; --line-2:#30445F;
+    --ink:#E7EDF5; --ink-2:#B4C1D3; --muted:#8C9BB0;
+    --brand:#0A2148; --brand-2:#79A6E6; --brand-ink:#FFFFFF; --brand-soft:#16294A;
+    --gold:#D3A85E; --gold-bright:#D9B06A; --gold-soft:#2E2617; --focus:#8DB4EC;
+    --good:#56C68B; --warn:#E3A43B; --crit:#F0726A; --crit-soft:#3B1C1C;
+    --c-off-bg:#3A3015; --c-off-fg:#F0D488;
+    --c-al-bg:#46211F;  --c-al-fg:#FFA8A0;
+    --c-ph-bg:#3F1C38;  --c-ph-fg:#F3A8E1;
+    --c-pd-bg:#2D244A;  --c-pd-fg:#C9B7F6;
+    --c-coff-bg:#14362F; --c-coff-fg:#8ADDC9;
+    --c-wo-bg:#173720;  --c-wo-fg:#92DEA6;
+    --c-na-bg:#1A2538;  --c-na-fg:#71839A;
+    --c-night:#15223A;
+    --s1:#4F86D6; --s2:#B8842C; --s3:#1C9481; --s4:#9F6CC0; --s5:#D8694B;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1220; --surface:#111C2D; --surface-2:#0E1828; --line:#22324A; --line-2:#30445F;
+  --ink:#E7EDF5; --ink-2:#B4C1D3; --muted:#8C9BB0;
+  --brand:#0A2148; --brand-2:#79A6E6; --brand-ink:#FFFFFF; --brand-soft:#16294A;
+  --gold:#D3A85E; --gold-bright:#D9B06A; --gold-soft:#2E2617; --focus:#8DB4EC;
+  --good:#56C68B; --warn:#E3A43B; --crit:#F0726A; --crit-soft:#3B1C1C;
+  --c-off-bg:#3A3015; --c-off-fg:#F0D488;
+  --c-al-bg:#46211F;  --c-al-fg:#FFA8A0;
+  --c-ph-bg:#3F1C38;  --c-ph-fg:#F3A8E1;
+  --c-pd-bg:#2D244A;  --c-pd-fg:#C9B7F6;
+  --c-coff-bg:#14362F; --c-coff-fg:#8ADDC9;
+  --c-wo-bg:#173720;  --c-wo-fg:#92DEA6;
+  --c-na-bg:#1A2538;  --c-na-fg:#71839A;
+  --c-night:#15223A;
+  --s1:#4F86D6; --s2:#B8842C; --s3:#1C9481; --s4:#9F6CC0; --s5:#D8694B;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 var(--font-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--brand)}
+[hidden]{display:none!important}
+img{max-width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+h1,h2,h3{margin:0;text-wrap:balance}
+h2{font:400 22px/1.2 var(--font-display);letter-spacing:.01em}
+h3{font-size:15px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.ar{font-family:var(--font-ar);direction:rtl}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.num{font-variant-numeric:tabular-nums}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- buttons & fields ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--surface-2);border-color:var(--brand-2)}
+.btn svg{width:16px;height:16px;flex:none}
+.btn.primary{background:var(--brand-2);border-color:var(--brand-2);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#fff}
+.btn.danger{color:var(--crit);border-color:var(--crit)}
+.btn.ghost{background:transparent}
+.btn.block{width:100%}
+.btn.lg{min-height:44px;padding:0 20px;font-size:15px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.icon-btn{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);cursor:pointer;flex:none}
+.icon-btn:hover{border-color:var(--brand-2)}
+.icon-btn svg{width:18px;height:18px}
+label.field{display:grid;gap:6px;font-weight:500;color:var(--ink-2);font-size:13px}
+input[type=text],input[type=password],input[type=search],input[type=date],input[type=number],select,textarea{min-height:38px;padding:7px 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);width:100%;min-width:0}
+textarea{min-height:60px;resize:vertical}
+.switch{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500}
+.switch input{width:18px;height:18px;accent-color:var(--brand-2);flex:none}
+.form-error{color:var(--crit);font-size:13px;font-weight:500}
+.form-ok{color:var(--good);font-size:13px;font-weight:500}
+
+/* ---------- login ---------- */
+.login{min-height:100vh;display:grid;place-items:center;padding-block:32px;background:
+  radial-gradient(1200px 500px at 15% -10%,var(--brand-soft),transparent 60%),var(--bg)}
+.login-card{width:min(880px,100%);display:grid;grid-template-columns:1.05fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.login-brand{background:#0C2D5B;color:#fff;padding:36px 32px;display:flex;flex-direction:column;gap:14px;position:relative}
+.login-brand::after{content:"";position:absolute;left:32px;right:32px;bottom:26px;height:1px;background:linear-gradient(90deg,#C99B4E,transparent)}
+.login-brand .mark{width:52px;height:52px}
+.login-brand .eyebrow{color:#E2C48F}
+.login-brand h1{font:400 34px/1.1 var(--font-display)}
+.login-brand p{color:#C9D6EA;max-width:34ch}
+.login-facts{display:flex;gap:24px;margin:10px 0 24px;flex-wrap:wrap}
+.login-facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#9FB3D1}
+.login-facts dd{margin:2px 0 0;font:400 20px/1.2 var(--font-display);color:#fff}
+.login-form{padding:36px 32px;display:grid;gap:12px;align-content:start}
+.login-form h2{margin-bottom:6px}
+.pw{display:flex;gap:6px}
+.pw button{flex:none}
+.credit{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+
+/* ---------- masthead & tabs ---------- */
+.mast{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--brand);color:var(--brand-ink);border-bottom:2px solid var(--gold-bright)}
+.mast-in{display:flex;align-items:center;justify-content:space-between;gap:12px;height:var(--mast-h);padding-block:6px;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand .mark{width:36px;height:36px;flex:none}
+.logo-plate{display:inline-grid;place-items:center;flex:none;background:#fff;border-radius:8px;padding:4px 8px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.logo-plate img{display:block;height:50px;width:auto;max-width:none}
+.logo-plate.lg{align-self:flex-start;padding:10px 16px;border-radius:12px}
+.logo-plate.lg img{height:96px}
+.logo-plate.framed{box-shadow:none;border:1px solid var(--line);padding:10px 16px}
+.logo-plate.framed img{height:72px}
+.brand .divider{width:1px;align-self:stretch;margin-block:8px;background:rgba(255,255,255,.28);flex:none}
+.brand b{display:block;font:400 19px/1.15 var(--font-display);letter-spacing:.02em}
+.brand span{display:block;font-size:12px;color:#C3D2E8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mast-actions{display:flex;align-items:center;gap:10px;flex:none}
+.save-state{font-size:12px;color:#C3D2E8;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.save-state .dot{width:8px;height:8px;border-radius:50%;background:#7FD3A2}
+.save-state.dirty .dot{background:#F2C46B}
+.mast .btn{min-height:34px;border-color:rgba(255,255,255,.35);background:transparent;color:#fff}
+.mast .btn.gold{background:var(--gold-bright);border-color:var(--gold-bright);color:#1A1406}
+.user-chip{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 10px;border:1px solid rgba(255,255,255,.25);border-radius:999px;font-size:13px;white-space:nowrap}
+.user-chip .role{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#E2C48F}
+.user-chip button{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;font-size:12px}
+.tabs{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--mast-h) + 2px);z-index:25}
+.tabs-in{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;max-width:1440px;margin:0 auto}
+.tabs-in::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:12px 12px 10px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--brand-2);border-bottom-color:var(--brand-2)}
+.main{max-width:1440px;margin:0 auto;padding-block:18px 28px;display:grid;gap:16px}
+.view{display:grid;gap:14px;min-width:0}
+.foot{max-width:1440px;margin:0 auto;padding-block:8px 28px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.banner{max-width:1440px;margin:12px auto 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-block:10px;background:var(--gold-soft);border:1px solid var(--gold);border-radius:10px}
+.banner p{flex:1 1 260px}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:grid;gap:12px;min-width:0}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.card-head p{color:var(--muted);font-size:13px}
+.lead{color:var(--ink-2);max-width:68ch}
+
+/* ---------- roster toolbar ---------- */
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.periodbar{display:flex;align-items:center;gap:6px;min-width:0}
+.periodbar select{width:auto;min-width:170px;font-weight:600}
+.tb-right{display:flex;gap:8px;flex-wrap:wrap}
+.subbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.subbar input{max-width:260px}
+.summary{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.summary b{font-variant-numeric:tabular-nums;color:var(--ink)}
+.summary b.crit{color:var(--crit)}
+.brushbar{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.brushbar .lbl{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;flex:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.brushbar .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;flex:1;min-width:0;padding-bottom:2px}
+.chip{border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip:hover{border-color:var(--brand-2)}
+.chip[aria-pressed="true"]{outline:2px solid var(--brand-2);outline-offset:1px}
+.chip.c-off{background:var(--c-off-bg);color:var(--c-off-fg);border-color:transparent}
+.chip.c-al{background:var(--c-al-bg);color:var(--c-al-fg);border-color:transparent}
+.chip.c-ph{background:var(--c-ph-bg);color:var(--c-ph-fg);border-color:transparent}
+.chip.c-pd{background:var(--c-pd-bg);color:var(--c-pd-fg);border-color:transparent}
+.chip.c-coff{background:var(--c-coff-bg);color:var(--c-coff-fg);border-color:transparent}
+.chip.c-wo{background:var(--c-wo-bg);color:var(--c-wo-fg);border-color:transparent}
+.chip.c-na{background:var(--c-na-bg);color:var(--c-na-fg);border-color:transparent}
+.brush-hint{font-size:12px;color:var(--brand-2);font-weight:500}
+
+/* ---------- roster grid ---------- */
+.grid-wrap{overflow:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);max-height:calc(100vh - 210px);min-height:280px;-webkit-overflow-scrolling:touch}
+table.roster{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;width:max-content;min-width:100%}
+.roster th,.roster td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0;text-align:center;height:36px}
+.roster thead th{position:sticky;top:0;z-index:3;background:var(--surface-2);height:auto;padding:6px 2px;font-weight:600}
+.roster .name-col{position:sticky;left:0;z-index:2;background:var(--surface);text-align:left;min-width:96px;max-width:120px;padding:0 8px;border-right:1px solid var(--line-2)}
+.roster thead .name-col{z-index:4;background:var(--surface-2);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.roster .d-col{min-width:52px;line-height:1.1}
+.roster .d-col .dn{display:block;font-size:15px;color:var(--ink)}
+.roster .d-col .dm{font-size:10px;color:var(--muted);font-weight:500}
+.roster .d-col .dw{display:block;font-size:10px;letter-spacing:.08em;color:var(--muted);margin-top:2px}
+.roster .d-col.wkend{background:var(--gold-soft)}
+.roster .d-col.today{box-shadow:inset 0 3px 0 var(--gold-bright)}
+.roster .d-col.today .dw{color:var(--gold);font-weight:700}
+.roster .post-col{min-width:76px;padding:0 8px;font-size:12px;color:var(--ink-2);text-align:left;white-space:nowrap}
+.roster thead .post-col{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.roster tr.sec-row th,.roster tr.sec-row td{background:var(--brand-soft);height:26px}
+.roster tr.sec-row .name-col{background:var(--brand-soft);font:400 13px/1.15 var(--font-display);color:var(--brand-2);letter-spacing:.02em;white-space:normal;padding-block:4px}
+.roster tr.sec-row .name-col small{display:block;font:500 10px var(--font-body);color:var(--muted);letter-spacing:0}
+.roster td.cnt{font-size:11px;color:var(--ink-2);font-weight:600}
+.roster td.cnt.low{color:var(--crit)}
+.roster td.cnt.low::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--crit);margin-right:3px;vertical-align:middle}
+.roster tr.tot-row th,.roster tr.tot-row td{background:var(--surface-2);font-weight:700;height:30px}
+.roster tr.tot-row .name-col{background:var(--surface-2);font-size:12px}
+.roster td.today-c{box-shadow:inset 1px 0 0 var(--gold-bright),inset -1px 0 0 var(--gold-bright)}
+.name-btn{border:0;background:none;padding:0;font-weight:600;cursor:pointer;color:var(--ink);text-align:left;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:36px}
+.name-btn:hover{color:var(--brand-2)}
+.cell-in{display:grid;place-items:center;width:100%;height:100%;min-height:35px;border:0;background:transparent;font-size:13px;font-weight:600;padding:0 2px;line-height:1.05}
+button.cell-in{cursor:pointer}
+button.cell-in:hover{box-shadow:inset 0 0 0 2px var(--brand-2)}
+.cell-in small{display:block;font-size:9px;letter-spacing:.06em}
+td.c-off{background:var(--c-off-bg);color:var(--c-off-fg)}
+td.c-al{background:var(--c-al-bg);color:var(--c-al-fg)}
+td.c-ph{background:var(--c-ph-bg);color:var(--c-ph-fg)}
+td.c-pd{background:var(--c-pd-bg);color:var(--c-pd-fg)}
+td.c-coff{background:var(--c-coff-bg);color:var(--c-coff-fg)}
+td.c-wo{background:var(--c-wo-bg);color:var(--c-wo-fg)}
+td.c-na{background:repeating-linear-gradient(135deg,var(--c-na-bg) 0 6px,transparent 6px 10px);color:var(--c-na-fg)}
+td.c-night{background:var(--c-night);color:var(--brand-2)}
+td.c-off .cell-in,td.c-al .cell-in,td.c-ph .cell-in,td.c-pd .cell-in,td.c-coff .cell-in{font-size:11px;letter-spacing:.04em}
+tr.flash td.cell{animation:flash .6s ease}
+@keyframes flash{from{filter:brightness(1.15)}to{filter:none}}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;color:var(--ink-2);align-items:center}
+.legend .sw{display:inline-grid;place-items:center;min-width:34px;height:20px;border-radius:5px;font-size:10px;font-weight:700;margin-right:6px;padding:0 4px}
+.legend .sw.c-off{background:var(--c-off-bg);color:var(--c-off-fg)}
+.legend .sw.c-al{background:var(--c-al-bg);color:var(--c-al-fg)}
+.legend .sw.c-ph{background:var(--c-ph-bg);color:var(--c-ph-fg)}
+.legend .sw.c-pd{background:var(--c-pd-bg);color:var(--c-pd-fg)}
+.legend .sw.c-coff{background:var(--c-coff-bg);color:var(--c-coff-fg)}
+.legend .sw.c-wo{background:var(--c-wo-bg);color:var(--c-wo-fg)}
+.legend .sw.c-night{background:var(--c-night);color:var(--brand-2)}
+.legend .sw.c-na{background:repeating-linear-gradient(135deg,var(--c-na-bg) 0 5px,transparent 5px 8px);border:1px solid var(--line)}
+.legend .ar{color:var(--muted);margin-left:4px}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);display:grid;gap:10px;justify-items:center}
+
+/* ---------- overlay sheets ---------- */
+.overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.backdrop{position:absolute;inset:0;background:rgba(6,16,32,.5)}
+.sheet{position:relative;width:min(560px,100%);max-height:88vh;display:flex;flex-direction:column;background:var(--surface);border-radius:16px 16px 0 0;box-shadow:var(--shadow);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet.wide{width:min(980px,100%)}
+@media (min-width:720px){.overlay{align-items:center;padding:24px}.sheet{border-radius:16px}}
+.sheet-head{display:flex;justify-content:space-between;gap:12px;padding:18px 18px 10px;border-bottom:1px solid var(--line)}
+.sheet-head h3{font:400 22px/1.2 var(--font-display)}
+.sheet-head .sub{color:var(--muted);font-size:13px;margin-top:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:700;background:var(--surface-2);border:1px solid var(--line)}
+.pill.c-off{background:var(--c-off-bg);color:var(--c-off-fg);border-color:transparent}
+.pill.c-al{background:var(--c-al-bg);color:var(--c-al-fg);border-color:transparent}
+.pill.c-ph{background:var(--c-ph-bg);color:var(--c-ph-fg);border-color:transparent}
+.pill.c-pd{background:var(--c-pd-bg);color:var(--c-pd-fg);border-color:transparent}
+.pill.c-coff{background:var(--c-coff-bg);color:var(--c-coff-fg);border-color:transparent}
+.pill.c-wo{background:var(--c-wo-bg);color:var(--c-wo-fg);border-color:transparent}
+.pill.c-night{background:var(--c-night);color:var(--brand-2);border-color:transparent}
+.pill.c-na{color:var(--muted)}
+.sheet-body{padding:14px 18px;overflow:auto;display:grid;gap:12px}
+.sheet-body .grp{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.sheet-body .chip{padding:8px 14px;font-size:14px}
+.other-time{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.other-time select{width:auto}
+.sheet-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}
+.chk input{accent-color:var(--brand-2)}
+.person-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.person-day{border:1px solid var(--line);border-radius:8px;padding:6px 8px;display:grid;gap:2px}
+.person-day .d{font-size:11px;color:var(--muted)}
+.person-day .v{font-weight:700;font-size:14px}
+.person-day.c-off{background:var(--c-off-bg);color:var(--c-off-fg);border-color:transparent}
+.person-day.c-al{background:var(--c-al-bg);color:var(--c-al-fg);border-color:transparent}
+.person-day.c-ph{background:var(--c-ph-bg);color:var(--c-ph-fg);border-color:transparent}
+.person-day.c-pd{background:var(--c-pd-bg);color:var(--c-pd-fg);border-color:transparent}
+.person-day.c-coff{background:var(--c-coff-bg);color:var(--c-coff-fg);border-color:transparent}
+.person-day.c-wo{background:var(--c-wo-bg);color:var(--c-wo-fg);border-color:transparent}
+.person-day.c-night{background:var(--c-night)}
+.person-day.today{outline:2px solid var(--gold-bright)}
+.person-day.c-off .d,.person-day.c-al .d,.person-day.c-ph .d,.person-day.c-pd .d,.person-day.c-coff .d,.person-day.c-wo .d{color:inherit;opacity:.8}
+.stat-row{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.stat-row b{font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums;margin-right:4px}
+.preview{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;place-items:center;min-height:200px}
+.preview img{display:block;width:100%;height:auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.note{font-size:13px;color:var(--ink-2);background:var(--brand-soft);border-radius:8px;padding:10px 12px}
+
+/* ---------- toast & tooltip ---------- */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;background:#13233A;color:#fff;border-radius:10px;padding:10px 14px;display:flex;gap:12px;align-items:center;box-shadow:var(--shadow);max-width:calc(100% - 32px);font-size:13px}
+.toast button{border:0;background:none;color:#F2C46B;font-weight:700;cursor:pointer;padding:4px}
+.tip{position:fixed;z-index:90;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:var(--shadow);max-width:240px;line-height:1.4}
+.tip b{font-variant-numeric:tabular-nums}
+.tip .row{display:flex;justify-content:space-between;gap:12px}
+.tip i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+/* ---------- distribute ---------- */
+.seg{justify-self:start;display:inline-flex;border:1px solid var(--line-2);border-radius:9px;padding:3px;gap:3px;background:var(--surface-2);flex-wrap:wrap}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:7px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--brand-2);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.form-row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.form-row > *{flex:1 1 180px}
+.form-row > .btn{flex:0 0 auto}
+.sec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.sec-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:grid;gap:10px;align-content:start}
+.sec-card h3{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font:400 17px/1.2 var(--font-display);color:var(--brand-2)}
+.sec-card h3 span{font:500 12px var(--font-body);color:var(--muted)}
+.sec-card .hint{font-size:12px;color:var(--muted)}
+.days-pick{display:flex;gap:4px;flex-wrap:wrap}
+.days-pick button{border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:5px 8px;font-size:12px;font-weight:600;cursor:pointer}
+.days-pick button[aria-pressed="true"]{background:var(--brand-2);border-color:var(--brand-2);color:#fff}
+.result{border-left:3px solid var(--good);background:var(--surface-2);border-radius:0 8px 8px 0;padding:10px 12px;display:grid;gap:6px;font-size:13px}
+.result.has-gaps{border-left-color:var(--warn)}
+.result ul{margin:0;padding-left:18px}
+
+/* ---------- analysis ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:grid;gap:2px}
+.kpi .k{font-size:12px;color:var(--muted);font-weight:500}
+.kpi .v{font:400 28px/1.1 var(--font-display);font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--ink-2)}
+.kpi.alert .v{color:var(--crit)}
+.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.charts .span2{grid-column:1/-1}
+.chart-legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+.chart-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{fill:var(--muted);font:500 11px var(--font-body);font-variant-numeric:tabular-nums}
+.chart text.val{fill:var(--ink);font-weight:600}
+.chart .grid line{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--line-2);stroke-width:1}
+.chart .hit{fill:transparent;cursor:pointer}
+.chart .hit:hover + .hl,.chart .hit:hover{fill:rgba(31,90,166,.06)}
+.gap-table{width:100%;border-collapse:collapse;font-size:13px}
+.gap-table th,.gap-table td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+.gap-table th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.gap-table td.num{font-variant-numeric:tabular-nums}
+.status{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12px}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.status.crit{color:var(--crit)}
+.status.good{color:var(--good)}
+
+/* ---------- staff & settings ---------- */
+.tbl-wrap{overflow-x:auto}
+.staff-table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+.staff-table th,.staff-table td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.staff-table th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.staff-table td.acts{white-space:nowrap;text-align:right}
+.staff-table input,.staff-table select{min-height:34px;padding:5px 8px}
+.rules-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.rules-list li{display:flex;gap:10px;align-items:flex-start;direction:rtl;font-family:var(--font-ar);font-size:15px;line-height:1.6}
+.rules-list .n{flex:none;display:inline-grid;place-items:center;width:28px;height:28px;border-radius:7px;background:var(--brand-soft);color:var(--brand-2);font:600 13px var(--font-body)}
+.rules-list textarea{font-family:var(--font-ar);direction:rtl;min-height:44px}
+.rules-list .del{flex:none}
+.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:500}
+
+@media (max-width:860px){
+  .charts,.settings-grid{grid-template-columns:minmax(0,1fr)}
+  .login-card{grid-template-columns:1fr}
+  .login-brand{padding:26px 24px}
+  .login-brand h1{font-size:28px}
+  .login-form{padding:24px}
+}
+@media (max-width:560px){
+  :root{--mast-h:62px}
+  .logo-plate img{height:40px}
+  .logo-plate{padding:3px 6px}
+  .logo-plate.lg img{height:72px}
+  .brand{gap:10px}
+  .brand .divider{display:none}
+  .brand b{font-size:16px}
+  .brand span{display:none}
+  .save-state .txt{display:none}
+  .user-chip .nm{display:none}
+  .tb-right .btn .t{display:none}
+  .tb-right .btn{padding:0 10px}
+  .periodbar select{min-width:0;flex:1}
+  .periodbar{flex:1 1 100%}
+  .tb-right{margin-left:auto}
+  .subbar input{max-width:none}
+  .roster .name-col{min-width:84px;max-width:96px;padding:0 6px}
+  .roster .d-col{min-width:46px}
+  .grid-wrap{max-height:calc(100vh - 250px)}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+#print-area{display:none}
+@media print{
+  body{background:#fff}
+  body::before{display:none}
+  body > *:not(#print-area){display:none!important}
+  #print-area{display:block!important}
+  #print-area img{display:block;width:100%;height:auto;max-height:196mm;object-fit:contain;box-shadow:none}
+  @page{size:A4 landscape;margin:6mm}
+}
+</style>
+<div id="app"></div>
+<script type="application/json" id="roster-data">{"version":1,"org":{"property":"Hilton Salalah Resort","dept":"Security Department","developer":"Ms. Amina Qatan","logo":"data:image/png;base64,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"},"users":[{"u":"AHMED QATAN","name":"Ahmed Qatan","role":"ADMIN","hash":"300acd2e4c6e7522f36c9ebfc45df3bddb8b845ef2cf767e69bc303905cbb5a7"}],"sections":[{"id":"mgmt","name":"Management","mode":"fixed","fixedOff":[5,6],"offsPerWeek":2,"need":0,"turn":4,"nightLeader":false},{"id":"leaders","name":"Shift Leaders","mode":"rotate","fixedOff":[5,6],"offsPerWeek":2,"need":2,"turn":4,"nightLeader":true},{"id":"secops","name":"Security / Operation","mode":"rotate","fixedOff":[5,6],"offsPerWeek":2,"need":3,"turn":4,"nightLeader":false},{"id":"gate","name":"Main Gate","mode":"cover","fixedOff":[5,6],"offsPerWeek":2,"need":1,"turn":4,"nightLeader":false},{"id":"cctv","name":"CCTV","mode":"rotate","fixedOff":[5,6],"offsPerWeek":2,"need":1,"turn":4,"nightLeader":false}],"staff":[{"id":"s01","name":"Jamal","section":"mgmt","post":"Manager","shift":"9am","active":true},{"id":"s02","name":"Nasid","section":"mgmt","post":"Ass. Manager","shift":"11am","active":true},{"id":"s03","name":"K.Salih","section":"leaders","post":"All Area","shift":"9pm","active":true},{"id":"s04","name":"A.Qaton","section":"leaders","post":"All Area","shift":"8pm","active":true},{"id":"s05","name":"Osama","section":"leaders","post":"All Area","shift":"7pm","active":true},{"id":"s06","name":"Mohamed","section":"leaders","post":"All Area","shift":"8pm","active":true},{"id":"s07","name":"A.Aziz","section":"secops","post":"Gate","shift":"7pm","active":true},{"id":"s08","name":"Marash","section":"secops","post":"PG","shift":"12pm","active":true},{"id":"s09","name":"Mouaed","section":"secops","post":"W.Bar","shift":"7pm","active":true},{"id":"s10","name":"Shamas","section":"secops","post":"W.Bar","shift":"6pm","active":true},{"id":"s11","name":"Jalal","section":"secops","post":"Lobby","shift":"9pm","active":true},{"id":"s12","name":"Said","section":"secops","post":"W.Bar","shift":"10pm","active":true},{"id":"s13","name":"Yaseer","section":"gate","post":"Gate","shift":"7am","active":true},{"id":"s14","name":"Fahad","section":"gate","post":"Gate","shift":"7am","active":true},{"id":"s15","name":"A.Hakeem","section":"cctv","post":"CCTV","shift":"8pm","active":true},{"id":"s16","name":"Naseer","section":"cctv","post":"CCTV","shift":"11am","active":true}],"periods":[{"id":"p2026-11-01","start":"2026-11-01","days":15,"cells":{"s01":["","","","","","O","O","9am","9am","9am","9am","9am","O","O","9am"],"s02":["9am","9am","9am","9am","9am","O","O","11am","11am","11am","11am","11am","O","O","11am"],"s03":["O","9pm","8pm","9pm","9pm","PH","O","O","10pm","10pm","10pm","9pm","9pm","O","O"],"s04":["9pm","O","O","8pm","8pm","8pm","8pm","8pm","O","O","8pm","8pm","PH","10pm","10pm"],"s05":["7pm","7pm","O","7pm","7pm","7pm","10pm","11am","12pm","O","8pm","8pm","10pm","7pm","8pm"],"s06":["O","8pm","7pm","6pm","8pm","8pm","8pm","8pm","8pm","8pm","O","O","8pm","8pm","O"],"s07":["PD","PD","AL","AL","O","O","7pm","7pm","7pm","7pm","7pm","O","WO/7pm","7pm","7pm"],"s08":["1pm","1pm","O","O","4pm","2pm","12pm","12pm","7am","O","O","4pm","2pm","12pm","12pm"],"s09":["10pm","O","O","7pm","7pm","7pm","8pm","10pm","O","O","6pm","6pm","7pm","8pm","9pm"],"s10":["6pm","6pm","4pm","O","O","AL","AL","AL","AL","AL","AL","AL","AL","AL","AL"],"s11":["O","O","9pm","9pm","9pm","9pm","9pm","O","O","6pm","9pm","9pm","9pm","9pm","O"],"s12":["O","10pm","10pm","10pm","10pm","10pm","O","O","AL","AL","AL","10pm","8pm","O","O"],"s13":["O","7am","7am","7am","7am","O","O","O","O","7am","7am","7am","7am","O","O"],"s14":["7am","O","O","O","O","7am","7am","7am","7am","O","O","O","O","7am","7am"],"s15":["8pm","8pm","8pm","8pm","8pm","O","O","8pm","8pm","8pm","8pm","8pm","O","O","11am"],"s16":["11am","11am","11am","11am","11am","11am","11am","11am","11am","11am","11am","11am","O","O","8pm"]}}],"rules":["الجدول قابل للتغير يوميا حسب متطلبات العمل","الالتزام بالحضور والانصراف على نظام بصمة الوجه","سيتم خصم نقص التوقيت على الموظف الغير ملتزم بنظام البصمة للحضور والانصراف","الانشغال بالهاتف او التدخين بمواقع العمل او اشياء اخرى اثناء العمل تعرضك للمسائلة","الالتزام بأرتداء الزي الموحد للعمل وضبط الهندام","ترك موقع العمل بدون تعليمات من المشرف المناوب تعرضك للمسائلة","يمنع الخروج من مقر العمل نهائيا الا للظرف الطارئ وبعد موافقة المدير المناوب او المشرف","عدم أخطار مسؤولك المباشر عن إجازتك الطبية او تأخرك بإستلام العمل تعرضك للمسائلة","الزامية الاطلاع على نظام العقوبات المعتمد من القوى العاملة المثبت بلوحة الاعلانات الداخلية","التسلسل الوظيفي للاستفسار او للشكاوي (مشرف، نائب المدير، مدير القسم، مدير الموارد البشرية، المدير العام)","أثناء خروج مدير القسم بإجازة يتولى نائب المدير كامل الصلاحية ويتم التواصل معه مباشرة","الاجازة السنوية بجدول العمل لا يعني الموافقة النهائية تكون قابلة للتغير"],"timings":[{"label":"Night shift leader","time":"10:00 PM"},{"label":"Beach line / PG Bar","time":"12 + 1 PM"},{"label":"PG and Whisper","time":"1 PM"},{"label":"Whisper Bar","time":"6:00 PM"},{"label":"Leaders distribution","time":"7:00 PM"},{"label":"Leaders distribution","time":"8-9 PM"}],"updated":"2026-11-03T20:47:00+04:00","updatedBy":"Imported from the 1-15 Nov sheet"}</script>
+<script id="app-js">
+(() => {
+'use strict';
+/* Security Roster Portal - Hilton Salalah Resort, Security Department
+   Developer: Ms. Amina Qatan */
+const SKELETON = "<!doctype html><html><head><meta charset=utf8><meta name=viewport content=\"width=device-width,initial-scale=1,viewport-fit=cover\"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>\n";
+const PAGE_HEAD = "<title>Security Roster Portal</title>\n<meta name=\"claude:viewport-fit-sides\" content=\"cover\">\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Marcellus&display=swap\">\n";
+const K_DATA = 'hsr-roster:data', K_DRAFT = 'hsr-roster:draft', K_SESSION = 'hsr-roster:session';
+
+/* ================= helpers ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const pad = n => String(n).padStart(2, '0');
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const parseJSON = s => { try { return s ? JSON.parse(s) : null; } catch (e) { return null; } };
+const ts = s => Date.parse(s || '') || 0;
+function webStore(kind) {
+  return {
+    get(k) { try { return window[kind].getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { window[kind].setItem(k, v); return true; } catch (e) { return false; } },
+    del(k) { try { window[kind].removeItem(k); } catch (e) { /* ignore */ } }
+  };
+}
+const LS = webStore('localStorage'), SS = webStore('sessionStorage');
+
+/* ================= SHA-256 (sign-in check) ================= */
+const K256 = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+function sha256(str) {
+  const bytes = new TextEncoder().encode(str);
+  const len = bytes.length, total = ((len + 9 + 63) >> 6) << 6;
+  const buf = new Uint8Array(total); buf.set(bytes); buf[len] = 0x80;
+  const dv = new DataView(buf.buffer);
+  dv.setUint32(total - 8, Math.floor(len / 0x20000000)); dv.setUint32(total - 4, (len * 8) >>> 0);
+  const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const W = new Uint32Array(64);
+  const ror = (x, n) => (x >>> n) | (x << (32 - n));
+  for (let i = 0; i < total; i += 64) {
+    for (let t = 0; t < 16; t++) W[t] = dv.getUint32(i + t * 4);
+    for (let t = 16; t < 64; t++) {
+      const a = W[t - 15], b = W[t - 2];
+      W[t] = (W[t - 16] + (ror(a, 7) ^ ror(a, 18) ^ (a >>> 3)) + W[t - 7] + (ror(b, 17) ^ ror(b, 19) ^ (b >>> 10))) >>> 0;
+    }
+    let [a, b, c, d, e, f, g, h] = H;
+    for (let t = 0; t < 64; t++) {
+      const t1 = (h + (ror(e, 6) ^ ror(e, 11) ^ ror(e, 25)) + ((e & f) ^ (~e & g)) + K256[t] + W[t]) >>> 0;
+      const t2 = ((ror(a, 2) ^ ror(a, 13) ^ ror(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+      h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+    }
+    H[0] = (H[0] + a) >>> 0; H[1] = (H[1] + b) >>> 0; H[2] = (H[2] + c) >>> 0; H[3] = (H[3] + d) >>> 0;
+    H[4] = (H[4] + e) >>> 0; H[5] = (H[5] + f) >>> 0; H[6] = (H[6] + g) >>> 0; H[7] = (H[7] + h) >>> 0;
+  }
+  return H.map(x => x.toString(16).padStart(8, '0')).join('');
+}
+const normUser = u => String(u || '').trim().replace(/\s+/g, ' ').toUpperCase();
+const passHash = (u, p) => sha256(normUser(u) + ':' + String(p || ''));
+
+/* ================= dates ================= */
+const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const DAYS_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const ymdMs = s => { const [y, m, d] = String(s).split('-').map(Number); return Date.UTC(y, m - 1, d); };
+const msYmd = ms => { const d = new Date(ms); return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()); };
+const addDays = (s, n) => msYmd(ymdMs(s) + n * 864e5);
+const weekday = s => new Date(ymdMs(s)).getUTCDay();
+const absDay = s => Math.round(ymdMs(s) / 864e5);
+const todayYmd = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const dparts = s => { const d = new Date(ymdMs(s)); return { d: d.getUTCDate(), m: d.getUTCMonth(), y: d.getUTCFullYear(), w: d.getUTCDay() }; };
+const fmtShort = s => { const p = dparts(s); return DAYS[p.w].charAt(0) + DAYS[p.w].slice(1).toLowerCase() + ' ' + p.d + ' ' + MON[p.m]; };
+const fmtLong = s => { const p = dparts(s); return DAYS_LONG[p.w] + ' ' + p.d + ' ' + MONTH[p.m] + ' ' + p.y; };
+const periodEnd = p => addDays(p.start, p.days - 1);
+const periodDates = p => Array.from({ length: p.days }, (_, i) => addDays(p.start, i));
+function periodLabel(p, long) {
+  const a = dparts(p.start), b = dparts(periodEnd(p)), M = long ? MONTH : MON;
+  if (a.m === b.m && a.y === b.y) return a.d + '–' + b.d + ' ' + M[a.m] + ' ' + a.y;
+  if (a.y === b.y) return a.d + ' ' + M[a.m] + ' – ' + b.d + ' ' + M[b.m] + ' ' + b.y;
+  return a.d + ' ' + M[a.m] + ' ' + a.y + ' – ' + b.d + ' ' + M[b.m] + ' ' + b.y;
+}
+const fileStamp = p => { const a = dparts(p.start), b = dparts(periodEnd(p)); return a.d + '-' + b.d + '-' + MON[b.m] + '-' + b.y; };
+
+/* ================= roster values ================= */
+const LEAVE = ['AL', 'PH', 'PD', 'C/OFF'];
+const CODES = [
+  { v: 'O', label: 'Day off', ar: 'راحة', cls: 'c-off', short: 'OFF' },
+  { v: 'AL', label: 'Annual leave', ar: 'سنوية', cls: 'c-al', short: 'AL' },
+  { v: 'PH', label: 'Public holiday', ar: 'مناسبات رسمية', cls: 'c-ph', short: 'PH' },
+  { v: 'PD', label: 'Compensation day', ar: 'تعويض', cls: 'c-pd', short: 'PD' },
+  { v: 'C/OFF', label: 'Paid leave', ar: 'اجازة مدفوعة', cls: 'c-coff', short: 'C/OFF' },
+  { v: 'WO', label: 'Working on a day off', ar: 'دوام في اجازة', cls: 'c-wo', short: 'WO' }
+];
+const CODE_BY = Object.fromEntries(CODES.map(c => [c.v, c]));
+const STD_TIMES = ['7am', '9am', '11am', '12pm', '1pm', '2pm', '4pm', '6pm', '7pm', '8pm', '9pm', '10pm'];
+const TIME_RE = /^(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s*m?\.?$/i;
+function toMin(t) {
+  const m = TIME_RE.exec(String(t || '').trim()); if (!m) return null;
+  const hr = +m[1]; if (hr < 1 || hr > 12) return null;
+  return (hr % 12 + (m[3].toLowerCase() === 'p' ? 12 : 0)) * 60 + (+(m[2] || 0));
+}
+function normTime(t) {
+  const m = TIME_RE.exec(String(t || '').trim()); if (!m) return String(t || '').trim();
+  return (+m[1]) + (m[2] && m[2] !== '00' ? ':' + m[2] : '') + m[3].toLowerCase() + 'm';
+}
+function pv(v) {
+  v = v == null ? '' : String(v).trim();
+  if (!v) return { kind: 'none', v: '' };
+  const u = v.toUpperCase();
+  if (u === 'O' || u === 'OFF') return { kind: 'off', code: 'O', v: 'O' };
+  if (u === 'C/OFF' || u === 'COFF' || u === 'C/O' || u === 'C OFF') return { kind: 'leave', code: 'C/OFF', v: 'C/OFF' };
+  if (LEAVE.includes(u)) return { kind: 'leave', code: u, v: u };
+  const wo = /^WO\b\s*\/?\s*(.*)$/i.exec(v);
+  if (wo) { const t = wo[1].trim(); const min = toMin(t); return { kind: 'duty', wo: true, code: 'WO', time: t ? normTime(t) : '', min, v: 'WO/' + (t ? normTime(t) : '') }; }
+  const min = toMin(v);
+  return { kind: 'duty', time: min == null ? v : normTime(v), min, v: min == null ? v : normTime(v) };
+}
+const isNight = min => min != null && (min >= 21 * 60 || min < 5 * 60);
+function cellClass(p) {
+  if (p.kind === 'none') return 'c-na';
+  if (p.kind === 'off') return 'c-off';
+  if (p.kind === 'leave') return CODE_BY[p.code].cls;
+  if (p.wo) return 'c-wo';
+  return isNight(p.min) ? 'c-night' : 'c-day';
+}
+function cellText(p) {
+  if (p.kind === 'none') return '';
+  if (p.kind === 'off') return 'OFF';
+  if (p.kind === 'leave') return p.code;
+  if (p.wo) return 'WO ' + (p.time || '');
+  return p.time;
+}
+function bucket(min) {
+  if (min == null) return 'Other';
+  if (min >= 300 && min < 720) return 'Morning';
+  if (min >= 720 && min < 1020) return 'Afternoon';
+  if (min >= 1020 && min < 1260) return 'Evening';
+  return 'Night';
+}
+
+/* ================= data ================= */
+const EMBEDDED = JSON.parse(document.getElementById('roster-data').textContent);
+const IN_CLAUDE = !!(window.claude && typeof window.claude.use === 'function');
+function validData(d) { return d && Array.isArray(d.staff) && Array.isArray(d.periods) && Array.isArray(d.sections) && Array.isArray(d.users); }
+let S = clone(EMBEDDED);
+let pendingDraft = null;
+if (!IN_CLAUDE) {
+  const saved = parseJSON(LS.get(K_DATA));
+  if (validData(saved) && ts(saved.updated) >= ts(EMBEDDED.updated)) S = saved;
+} else {
+  const d = parseJSON(LS.get(K_DRAFT));
+  if (d && validData(d.data) && ts(d.data.updated) > ts(EMBEDDED.updated)) pendingDraft = d.data; else LS.del(K_DRAFT);
+}
+
+const ui = {
+  tab: 'roster', periodId: null, session: null, brush: null, modal: null, dirty: false, readOnly: false, saving: false,
+  undo: [], autoNext: true, distMode: 'new', distStart: null, distLen: 'month', keepLeave: true, keepEntered: false,
+  lastDist: null, loginError: '', toastTimer: null
+};
+(function restoreSession() {
+  const s = parseJSON(SS.get(K_SESSION));
+  if (!s) return;
+  if (s.session && (s.session.role === 'VIEWER' || S.users.some(u => u.u === s.session.u))) ui.session = s.session;
+  if (s.tab) ui.tab = s.tab;
+  if (s.periodId) ui.periodId = s.periodId;
+})();
+const persistSession = () => SS.set(K_SESSION, JSON.stringify({ session: ui.session, tab: ui.tab, periodId: ui.periodId }));
+const isAdmin = () => !!(ui.session && ui.session.role === 'ADMIN');
+
+const sortedPeriods = () => S.periods.slice().sort((a, b) => ymdMs(a.start) - ymdMs(b.start));
+function curPeriod() {
+  let p = S.periods.find(x => x.id === ui.periodId);
+  if (!p) {
+    const t = todayYmd(), list = sortedPeriods();
+    p = list.find(x => x.start <= t && periodEnd(x) >= t) || list[list.length - 1] || null;
+    ui.periodId = p ? p.id : null;
+  }
+  return p;
+}
+const secById = id => S.sections.find(s => s.id === id);
+function ensureRow(p, sid) {
+  let r = p.cells[sid];
+  if (!Array.isArray(r)) r = p.cells[sid] = [];
+  while (r.length < p.days) r.push('');
+  if (r.length > p.days) r.length = p.days;
+  return r;
+}
+function periodStaff(p) {
+  return S.staff.filter(s => s.active !== false || (p.cells[s.id] || []).some(v => String(v || '').trim()));
+}
+function staffBySection(p) {
+  const list = periodStaff(p);
+  return S.sections.map(sec => ({ sec, members: list.filter(s => s.section === sec.id) })).concat(
+    [{ sec: { id: '_none', name: 'Unassigned', need: 0 }, members: list.filter(s => !secById(s.section)) }]
+  ).filter(g => g.members.length);
+}
+
+/* ================= changes, undo, saving ================= */
+function snapshot() { ui.undo.push(JSON.stringify(S)); if (ui.undo.length > 40) ui.undo.shift(); }
+function undo() {
+  const prev = ui.undo.pop(); if (!prev) { toast('Nothing to undo.'); return; }
+  S = JSON.parse(prev); touch(true); render(); toast('Change undone.');
+}
+function touch(skipStamp) {
+  if (!skipStamp) { S.updated = new Date().toISOString(); S.updatedBy = ui.session ? ui.session.name : ''; }
+  else { S.updated = new Date().toISOString(); }
+  if (IN_CLAUDE) {
+    ui.dirty = true;
+    LS.set(K_DRAFT, JSON.stringify({ data: S, base: EMBEDDED.updated }));
+  } else {
+    LS.set(K_DATA, JSON.stringify(S));
+    ui.dirty = false;
+  }
+  renderMastState();
+}
+function change(fn, opts) {
+  snapshot(); fn(); touch();
+  if (!opts || opts.render !== false) render();
+}
+function buildDocument(data) {
+  const css = document.getElementById('app-css').textContent;
+  const js = document.getElementById('app-js').textContent;
+  const json = JSON.stringify(data).replace(/</g, '\\u003c');
+  return SKELETON + PAGE_HEAD + '<style id="app-css">' + css + '</style>\n<div id="app"></div>\n<script type="application/json" id="roster-data">' + json + '</scr' + 'ipt>\n<script id="app-js">' + js + '</scr' + 'ipt>\n</body></html>';
+}
+async function save(retried) {
+  if (!IN_CLAUDE || ui.saving || ui.readOnly) return;
+  ui.saving = true; renderMastState();
+  let art = null;
+  try { art = await window.claude.use('artifact'); } catch (e) { art = null; }
+  if (!art) {
+    ui.saving = false; ui.readOnly = true; renderMastState();
+    toast('Saving is not available in this view. Your changes are kept on this device.');
+    return;
+  }
+  persistSession();
+  LS.set(K_DRAFT, JSON.stringify({ data: S, base: EMBEDDED.updated }));
+  try {
+    await art.publish(buildDocument(S));
+    toast('Saved. Loading the saved version…');
+  } catch (e) {
+    ui.saving = false;
+    const c = e && e.code;
+    if (c === 'conflict') toast('A newer version was saved somewhere else. The page is reloading to it; you can restore your edits after it opens.');
+    else if (c === 'not_writer' || c === 'not_granted') { ui.readOnly = true; toast('You can view this portal but not save it. Your changes stay on this device.'); }
+    else if (c === 'rate_limited') toast('Saving too often. Wait a moment, then save again.');
+    else if (c === 'upstream_error' && !retried) { setTimeout(() => save(true), 1200 + Math.random() * 1500); return; }
+    else toast('The save did not go through (' + (c || 'error') + '). Your changes are kept on this device.');
+    renderMastState();
+  }
+}
+
+/* ================= auto-distribution ================= */
+function staffTimes(s) {
+  const list = String(s.shift || '').split(/[,;]+/).map(t => t.trim()).filter(Boolean).map(normTime);
+  return list.length ? list : ['9am'];
+}
+function distribute(p, opts) {
+  const n = p.days, startAbs = absDay(p.start), dates = periodDates(p);
+  const result = { gaps: [], filled: 0 };
+  for (const sec of S.sections) {
+    const members = S.staff.filter(s => s.active !== false && s.section === sec.id);
+    if (!members.length) continue;
+    const need = clamp(+sec.need || 0, 0, members.length);
+    const keep = {}, avail = {}, off = {};
+    members.forEach(s => {
+      const row = ensureRow(p, s.id);
+      keep[s.id] = row.map(v => { const x = pv(v); return (x.kind === 'leave' && opts.keepLeave) || (opts.keepEntered && x.kind !== 'none'); });
+      avail[s.id] = keep[s.id].map(k => !k);
+      off[s.id] = Array(n).fill(false);
+    });
+    if (sec.mode === 'fixed') {
+      const fx = (sec.fixedOff || []).map(Number);
+      members.forEach(s => dates.forEach((dt, d) => { if (avail[s.id][d] && fx.includes(weekday(dt))) off[s.id][d] = true; }));
+    } else if (sec.mode === 'cover') {
+      const k = members.length, turn = clamp(+sec.turn || 4, 1, 14), want = Math.max(1, need);
+      for (let d = 0; d < n; d++) {
+        const slot = Math.floor((startAbs + d) / turn), picked = [];
+        for (let j = 0; j < k && picked.length < want; j++) {
+          const s = members[(slot * want + j) % k];
+          if (avail[s.id][d]) picked.push(s.id);
+        }
+        members.forEach(s => { if (avail[s.id][d] && !picked.includes(s.id)) off[s.id][d] = true; });
+      }
+    } else {
+      const perWeek = clamp(+sec.offsPerWeek || 0, 0, 5), blockLen = perWeek >= 2 ? 2 : 1;
+      const onDuty = Array(n).fill(0);
+      members.forEach(s => avail[s.id].forEach((a, d) => { if (a) onDuty[d]++; }));
+      const pref = {};
+      members.forEach((s, i) => { pref[s.id] = Math.round(i * 7 / members.length) % 7; });
+      const order = members.slice().sort((a, b) => avail[a.id].filter(Boolean).length - avail[b.id].filter(Boolean).length);
+      for (const s of order) {
+        const availDays = avail[s.id].filter(Boolean).length;
+        let q = Math.round(perWeek * availDays / 7);
+        const placed = [];
+        while (q > 0) {
+          const len = Math.min(blockLen, q);
+          let best = null;
+          for (let st = 0; st + len <= n; st++) {
+            let ok = true, surplus = 0;
+            for (let d = st; d < st + len; d++) {
+              if (!avail[s.id][d] || off[s.id][d]) { ok = false; break; }
+              surplus += onDuty[d] - need;
+            }
+            if (!ok) continue;
+            let score = Math.min(surplus, len * 2) * 10 + (surplus < 0 ? surplus * 40 : 0);
+            if (placed.length) {
+              const gap = Math.min(...placed.map(x => Math.abs(st - x)));
+              score -= Math.abs(gap - 7) * 4;
+              if (gap <= len) score -= 60;
+            } else {
+              const want = ((pref[s.id] - (startAbs % 7)) % 7 + 7) % 7;
+              score -= Math.min(Math.abs(st - want), Math.abs(st - want - 7), Math.abs(st - want + 7)) * 3;
+            }
+            if (!best || score > best.score) best = { st, score, len };
+          }
+          if (!best) break;
+          for (let d = best.st; d < best.st + best.len; d++) { off[s.id][d] = true; onDuty[d]--; }
+          placed.push(best.st); q -= best.len;
+        }
+      }
+    }
+    const nightMin = toMin(sec.nightTime || '10pm');
+    const nightCount = {}; members.forEach(s => { nightCount[s.id] = 0; });
+    for (let d = 0; d < n; d++) {
+      const workers = [];
+      for (const s of members) {
+        if (keep[s.id][d]) { if (toMin(pv(p.cells[s.id][d]).time) === nightMin) nightCount[s.id]++; continue; }
+        if (off[s.id][d]) { p.cells[s.id][d] = 'O'; result.filled++; continue; }
+        const times = staffTimes(s);
+        p.cells[s.id][d] = times[(startAbs + d) % times.length];
+        result.filled++;
+        workers.push(s);
+      }
+      if (sec.nightLeader && nightMin != null && workers.length) {
+        const has = members.some(s => { const x = pv(p.cells[s.id][d]); return x.kind === 'duty' && x.min === nightMin; });
+        if (!has) {
+          const pick = workers.slice().sort((a, b) => (nightCount[a.id] - nightCount[b.id]) || ((toMin(staffTimes(b)[0]) || 0) - (toMin(staffTimes(a)[0]) || 0)))[0];
+          p.cells[pick.id][d] = normTime(sec.nightTime || '10pm');
+          nightCount[pick.id]++;
+        } else {
+          members.forEach(s => { if (!keep[s.id][d] && pv(p.cells[s.id][d]).min === nightMin) nightCount[s.id]++; });
+        }
+      }
+      const duty = members.filter(s => pv(p.cells[s.id][d]).kind === 'duty').length;
+      if (duty < need) result.gaps.push({ date: dates[d], sec: sec.name, have: duty, need });
+    }
+  }
+  return result;
+}
+
+/* ================= analysis ================= */
+function analyze(p) {
+  const dates = periodDates(p), groups = staffBySection(p);
+  const daily = dates.map(() => ({}));
+  const people = [], times = {}, buckets = { Morning: 0, Afternoon: 0, Evening: 0, Night: 0, Other: 0 };
+  const codes = { O: 0, AL: 0, PH: 0, PD: 0, 'C/OFF': 0, WO: 0 };
+  const gaps = [];
+  let duty = 0, offs = 0, leave = 0, unset = 0;
+  for (const g of groups) {
+    for (const s of g.members) {
+      const row = ensureRow(p, s.id);
+      const rec = { id: s.id, name: s.name, sec: g.sec.id, post: s.post, duty: 0, off: 0, leave: 0, none: 0, night: 0 };
+      row.forEach((v, d) => {
+        const x = pv(v);
+        if (x.kind === 'duty') {
+          rec.duty++; duty++; daily[d][g.sec.id] = (daily[d][g.sec.id] || 0) + 1;
+          if (x.wo) codes.WO++;
+          if (isNight(x.min)) rec.night++;
+          const key = x.min == null ? (x.time || 'Other') : normTime(x.time);
+          if (!times[key]) times[key] = { label: key, min: x.min == null ? 9999 : x.min, n: 0 };
+          times[key].n++; buckets[bucket(x.min)]++;
+        } else if (x.kind === 'off') { rec.off++; offs++; codes.O++; }
+        else if (x.kind === 'leave') { rec.leave++; leave++; codes[x.code]++; }
+        else { rec.none++; unset++; }
+      });
+      people.push(rec);
+    }
+    const sec = g.sec, need = +sec.need || 0;
+    if (need > 0) dates.forEach((dt, d) => { const h = daily[d][sec.id] || 0; if (h < need) gaps.push({ date: dt, sec: sec.name, have: h, need }); });
+  }
+  const totals = daily.map(o => Object.values(o).reduce((a, b) => a + b, 0));
+  const needTotal = groups.reduce((a, g) => a + (+g.sec.need || 0), 0);
+  gaps.sort((a, b) => ymdMs(a.date) - ymdMs(b.date));
+  const gapDays = new Set(gaps.map(g => g.date)).size;
+  return { dates, groups, daily, totals, people, times: Object.values(times).sort((a, b) => a.min - b.min), buckets, codes, gaps, gapDays, duty, offs, leave, unset, needTotal };
+}
+
+/* ================= icons ================= */
+const ICON = {
+  mark: '<svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><rect x="1" y="1" width="46" height="46" rx="11" fill="#0C2D5B" stroke="#C99B4E" stroke-width="2"/><path d="M24 9.5 36 14v9.2c0 7.7-5 13.6-12 15.8-7-2.2-12-8.1-12-15.8V14z" fill="none" stroke="#E2C48F" stroke-width="2.2" stroke-linejoin="round"/><circle cx="24" cy="21.5" r="3.6" fill="#E2C48F"/><path d="M22.4 24.5h3.2l1.1 7.3h-5.4z" fill="#E2C48F"/></svg>',
+  xls: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l8 8M16 8l-8 8"/></svg>',
+  pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
+  print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>',
+  undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
+  left: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>',
+  right: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  wand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 4 1.5 3L20 8.5 16.5 10 15 13l-1.5-3L10 8.5 13.5 7z"/><path d="M4 20 13 11"/></svg>'
+};
+
+function logoHtml(extra) {
+  if (!S.org.logo) return ICON.mark;
+  return `<span class="logo-plate ${extra || ''}"><img src="${esc(S.org.logo)}" alt="${esc(S.org.property)}"></span>`;
+}
+function loadImg(src) {
+  return new Promise(res => { if (!src) { res(null); return; } const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+}
+function fileToLogo(file) {
+  return new Promise((res, rej) => {
+    const rd = new FileReader();
+    rd.onerror = () => rej(new Error('read'));
+    rd.onload = () => {
+      const img = new Image();
+      img.onerror = () => rej(new Error('image'));
+      img.onload = () => {
+        let h = Math.min(240, img.naturalHeight), w = Math.round(img.naturalWidth * h / img.naturalHeight);
+        if (w > 600) { h = Math.round(h * 600 / w); w = 600; }
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        const c = cv.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, w, h); c.drawImage(img, 0, 0, w, h);
+        res(cv.toDataURL('image/png'));
+      };
+      img.src = rd.result;
+    };
+    rd.readAsDataURL(file);
+  });
+}
+
+/* ================= rendering ================= */
+const app = document.getElementById('app');
+function render() {
+  const wrap = $('.grid-wrap');
+  const scroll = wrap ? [wrap.scrollLeft, wrap.scrollTop] : null;
+  const winY = window.scrollY;
+  if (!ui.session) { app.innerHTML = loginHtml(); persistSession(); return; }
+  const p = curPeriod();
+  app.innerHTML = shellHtml(p);
+  const w2 = $('.grid-wrap');
+  if (w2 && scroll) { w2.scrollLeft = scroll[0]; w2.scrollTop = scroll[1]; }
+  window.scrollTo(0, winY);
+  if (ui.tab === 'analysis' && p) drawCharts(p);
+  renderOverlay();
+  persistSession();
+}
+
+function loginHtml() {
+  const p = curPeriod();
+  return `<div class="login gutter"><div class="login-card">
+    <div class="login-brand">${logoHtml('lg')}
+      <p class="eyebrow">${esc(S.org.dept)}</p>
+      <h1>Security Roster</h1>
+      <p>Duty roster, automatic shift distribution and coverage analysis for the ${esc(S.org.dept)}.</p>
+      <dl class="login-facts"><div><dt>Current roster</dt><dd>${p ? esc(periodLabel(p)) : '—'}</dd></div><div><dt>Staff</dt><dd>${S.staff.filter(s => s.active !== false).length}</dd></div><div><dt>Teams</dt><dd>${S.sections.length}</dd></div></dl>
+    </div>
+    <form class="login-form" id="login-form" novalidate>
+      <h2>Sign in</h2>
+      <label class="field" for="lg-user">User ID<input type="text" id="lg-user" autocomplete="username" autocapitalize="words" spellcheck="false" placeholder="Your name"></label>
+      <label class="field" for="lg-pass">Password<span class="pw"><input type="password" id="lg-pass" autocomplete="current-password"><button type="button" class="btn" data-act="toggle-pw">Show</button></span></label>
+      <p class="form-error" id="lg-err" role="alert" ${ui.loginError ? '' : 'hidden'}>${esc(ui.loginError)}</p>
+      <button class="btn primary block lg" type="submit">Sign in</button>
+      <button class="btn ghost block" type="button" data-act="view-only">View the roster without signing in</button>
+      <p class="credit">Developed by ${esc(S.org.developer || 'Ms. Amina Qatan')}</p>
+    </form></div></div>`;
+}
+
+function shellHtml(p) {
+  const tabs = [['roster', 'Roster'], ['distribute', 'Auto-distribute', true], ['analysis', 'Analysis'], ['staff', 'Staff'], ['rules', isAdmin() ? 'Rules & settings' : 'Rules']]
+    .filter(t => !t[2] || isAdmin());
+  if (!tabs.some(t => t[0] === ui.tab)) ui.tab = 'roster';
+  let view = '';
+  if (ui.tab === 'roster') view = rosterHtml(p);
+  else if (ui.tab === 'distribute') view = distributeHtml(p);
+  else if (ui.tab === 'analysis') view = analysisHtml(p);
+  else if (ui.tab === 'staff') view = staffHtml();
+  else view = rulesHtml(p);
+  const banner = pendingDraft && isAdmin() ? `<div class="banner gutter"><p><b>Unsaved changes from an earlier visit.</b> They were made on this device on ${esc(new Date(ts(pendingDraft.updated)).toLocaleString())}.</p><button class="btn" data-act="draft-discard">Discard</button><button class="btn primary" data-act="draft-restore">Restore them</button></div>` : '';
+  return `<header class="mast"><div class="mast-in gutter">
+      <div class="brand">${logoHtml()}${S.org.logo ? '<span class="divider" aria-hidden="true"></span>' : ''}<div><b>Security Roster</b><span>${esc(S.org.logo ? S.org.dept : S.org.property + ' · ' + S.org.dept)}</span></div></div>
+      <div class="mast-actions"><div id="mast-state">${mastStateHtml()}</div>
+        <div class="user-chip"><span class="nm">${esc(ui.session.name)}</span><span class="role">${isAdmin() ? 'Admin' : 'Viewer'}</span><button type="button" data-act="logout">${isAdmin() ? 'Sign out' : 'Sign in'}</button></div></div>
+    </div></header>
+    <nav class="tabs" aria-label="Portal sections"><div class="tabs-in gutter">${tabs.map(t => `<button class="tab" data-act="tab" data-tab="${t[0]}" ${ui.tab === t[0] ? 'aria-current="page"' : ''}>${t[1]}</button>`).join('')}</div></nav>
+    ${banner}
+    <main class="main gutter" id="main">${view}</main>
+    <footer class="foot gutter"><span>Security Roster Portal · ${esc(S.org.property)}</span><span>Developed by ${esc(S.org.developer || 'Ms. Amina Qatan')}</span></footer>
+    <div id="overlay"></div>`;
+}
+function mastStateHtml() {
+  if (!isAdmin()) return `<span class="save-state"><span class="dot"></span><span class="txt">View only</span></span>`;
+  if (!IN_CLAUDE) return `<span class="save-state"><span class="dot"></span><span class="txt">Saved on this device</span></span>`;
+  if (ui.readOnly) return `<span class="save-state dirty"><span class="dot"></span><span class="txt">${ui.dirty ? 'Changes kept on this device' : 'Read-only copy'}</span></span>`;
+  if (ui.saving) return `<span class="save-state dirty"><span class="dot"></span><span class="txt">Saving…</span></span>`;
+  if (ui.dirty) return `<button class="btn gold" data-act="save">Save changes</button>`;
+  return `<span class="save-state"><span class="dot"></span><span class="txt">All changes saved</span></span>`;
+}
+function renderMastState() { const el = $('#mast-state'); if (el) el.innerHTML = mastStateHtml(); }
+
+function periodBar(p) {
+  const list = sortedPeriods();
+  return `<div class="periodbar"><button class="icon-btn" data-act="period-step" data-dir="-1" aria-label="Previous period">${ICON.left}</button>
+    <select id="period-sel" aria-label="Roster period">${list.map(x => `<option value="${esc(x.id)}" ${p && x.id === p.id ? 'selected' : ''}>${esc(periodLabel(x))}</option>`).join('')}</select>
+    <button class="icon-btn" data-act="period-step" data-dir="1" aria-label="Next period">${ICON.right}</button></div>`;
+}
+
+function rosterHtml(p) {
+  if (!p) return `<section class="view"><div class="card empty"><h2>No roster yet</h2><p>Create the first period in Auto-distribute.</p>${isAdmin() ? '<button class="btn primary" data-act="tab" data-tab="distribute">Open Auto-distribute</button>' : ''}</div></section>`;
+  const A = analyze(p), today = todayYmd(), ti = A.dates.indexOf(today);
+  const brush = isAdmin() ? brushHtml(p) : '';
+  return `<section class="view">
+    <div class="toolbar">${periodBar(p)}
+      <div class="tb-right">
+        <button class="btn" data-act="export-xlsx" title="Download as Excel">${ICON.xls}<span class="t">Excel</span></button>
+        <button class="btn" data-act="export-pdf" title="Download as PDF">${ICON.pdf}<span class="t">PDF</span></button>
+        <button class="btn primary" data-act="print" title="Print one page">${ICON.print}<span class="t">Print</span></button>
+      </div></div>
+    <div class="subbar"><input type="search" id="staff-filter" placeholder="Find a staff member" aria-label="Find a staff member" autocomplete="off">
+      <div class="summary">${ti >= 0 ? `<span>On duty today: <b>${A.totals[ti]}</b></span>` : ''}<span>Duty shifts: <b>${A.duty}</b></span><span>Leave days: <b>${A.leave}</b></span><span>Days below minimum: <b class="${A.gapDays ? 'crit' : ''}">${A.gapDays}</b></span></div></div>
+    ${brush}
+    ${gridHtml(p, A)}
+    ${legendHtml()}
+  </section>`;
+}
+function brushOptions(p) {
+  const seen = new Set();
+  periodStaff(p).forEach(s => staffTimes(s).forEach(t => seen.add(t)));
+  STD_TIMES.forEach(t => seen.add(t));
+  const times = Array.from(seen).sort((a, b) => (toMin(a) ?? 9999) - (toMin(b) ?? 9999));
+  return [['O', 'OFF', 'c-off'], ['AL', 'AL', 'c-al'], ['PH', 'PH', 'c-ph'], ['PD', 'PD', 'c-pd'], ['C/OFF', 'C/OFF', 'c-coff']].concat(times.map(t => [t, t, ''])).concat([['', 'Clear', 'c-na']]);
+}
+function brushHtml(p) {
+  const opts = brushOptions(p);
+  const hint = ui.brush != null ? `<span class="brush-hint">Tap cells to fill with ${esc(ui.brush === '' ? 'blank' : cellText(pv(ui.brush)))}. Tap the chip again to stop.</span>` : '';
+  return `<div class="brushbar"><span class="lbl">Quick fill</span><div class="chips" role="group" aria-label="Quick fill value">${opts.map(o => `<button class="chip ${o[2]}" data-act="brush" data-v="${esc(o[0])}" aria-pressed="${ui.brush === o[0]}">${esc(o[1])}</button>`).join('')}</div>
+    <button class="icon-btn" data-act="undo" aria-label="Undo the last change" title="Undo">${ICON.undo}</button></div>${hint}`;
+}
+function gridHtml(p, A) {
+  const today = todayYmd(), admin = isAdmin();
+  const head = A.dates.map(dt => { const x = dparts(dt); return `<th class="d-col ${x.w === 5 || x.w === 6 ? 'wkend' : ''} ${dt === today ? 'today' : ''}" scope="col"><span class="dn">${x.d}</span><span class="dm">${MON[x.m]}</span><span class="dw">${DAYS[x.w]}</span></th>`; }).join('');
+  let body = '';
+  A.groups.forEach(g => {
+    const need = +g.sec.need || 0;
+    body += `<tr class="sec-row"><th class="name-col" scope="rowgroup">${esc(g.sec.name)}${need ? `<small>Min ${need} on duty</small>` : ''}</th>${A.dates.map((dt, d) => { const h = A.daily[d][g.sec.id] || 0; return `<td class="cnt ${need && h < need ? 'low' : ''}" title="${h} on duty${need ? ', minimum ' + need : ''}">${h}</td>`; }).join('')}<td class="post-col"></td></tr>`;
+    g.members.forEach(s => {
+      const row = ensureRow(p, s.id);
+      body += `<tr data-row="${esc(s.id)}" data-name="${esc(s.name.toLowerCase())}"><th class="name-col" scope="row"><button class="name-btn" data-act="person" data-s="${esc(s.id)}">${esc(s.name)}</button></th>${row.map((v, d) => {
+        const x = pv(v), cls = cellClass(x), txt = cellText(x);
+        const inner = x.wo ? `<small>WO</small>${esc(x.time)}` : esc(txt);
+        const label = `${s.name}, ${fmtShort(A.dates[d])}: ${txt || 'not on roster'}`;
+        return `<td class="cell ${cls} ${A.dates[d] === today ? 'today-c' : ''}">${admin ? `<button class="cell-in" data-act="cell" data-s="${esc(s.id)}" data-d="${d}" aria-label="${esc(label)}">${inner}</button>` : `<span class="cell-in" aria-label="${esc(label)}">${inner}</span>`}</td>`;
+      }).join('')}<td class="post-col">${esc(s.post || '')}</td></tr>`;
+    });
+  });
+  body += `<tr class="tot-row"><th class="name-col" scope="row">On duty</th>${A.totals.map(t => `<td class="num">${t}</td>`).join('')}<td class="post-col"></td></tr>`;
+  return `<div class="grid-wrap"><table class="roster"><thead><tr><th class="name-col" scope="col">Staff</th>${head}<th class="post-col" scope="col">Post</th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
+function legendHtml() {
+  return `<div class="legend">${CODES.map(c => `<span><span class="sw ${c.cls}">${esc(c.short)}</span>${esc(c.label)}<span class="ar">${esc(c.ar)}</span></span>`).join('')}
+    <span><span class="sw c-night">9pm</span>Night shift (9 pm or later)</span><span><span class="sw c-na"></span>Not on the roster</span></div>`;
+}
+
+/* ---------- distribute view ---------- */
+function nextStart() { const list = sortedPeriods(); return list.length ? addDays(periodEnd(list[list.length - 1]), 1) : todayYmd(); }
+function distLength(start) {
+  if (ui.distLen === 'month') { const x = dparts(start); const dim = new Date(Date.UTC(x.y, x.m + 1, 0)).getUTCDate(); return dim - x.d + 1; }
+  return clamp(+ui.distLen || 15, 1, 31);
+}
+const MODE_HINT = {
+  rotate: 'Each person gets the set number of days off every week, usually two days together. Days off are spread out so the minimum stays on duty.',
+  fixed: 'Everyone in this team is off on the same weekdays, for example Friday and Saturday.',
+  cover: 'Staff take turns: the set number of people work each day and the rest are off, changing every few days.'
+};
+function distributeHtml(p) {
+  if (!ui.distStart) ui.distStart = nextStart();
+  const start = ui.distStart, len = distLength(start);
+  const preview = { start, days: len };
+  const secCards = S.sections.map(sec => {
+    const n = S.staff.filter(s => s.active !== false && s.section === sec.id).length;
+    const mode = sec.mode || 'rotate';
+    return `<div class="sec-card"><h3>${esc(sec.name)}<span>${n} staff</span></h3>
+      <label class="field">Days off pattern<select data-sec="${esc(sec.id)}" data-field="mode">
+        <option value="rotate" ${mode === 'rotate' ? 'selected' : ''}>Rotating days off</option>
+        <option value="fixed" ${mode === 'fixed' ? 'selected' : ''}>Same days off for everyone</option>
+        <option value="cover" ${mode === 'cover' ? 'selected' : ''}>Take turns</option></select></label>
+      <label class="field">Minimum on duty each day<input type="number" min="0" max="${n}" value="${+sec.need || 0}" data-sec="${esc(sec.id)}" data-field="need"></label>
+      ${mode === 'rotate' ? `<label class="field">Days off per week<select data-sec="${esc(sec.id)}" data-field="offsPerWeek">${[1, 2, 3].map(k => `<option value="${k}" ${+sec.offsPerWeek === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>` : ''}
+      ${mode === 'fixed' ? `<div class="field"><span>Days off</span><div class="days-pick">${DAYS.map((d, i) => `<button type="button" data-act="fixed-day" data-sec="${esc(sec.id)}" data-day="${i}" aria-pressed="${(sec.fixedOff || []).includes(i)}">${d}</button>`).join('')}</div></div>` : ''}
+      ${mode === 'cover' ? `<label class="field">Days per turn<select data-sec="${esc(sec.id)}" data-field="turn">${[1, 2, 3, 4, 5, 6, 7].map(k => `<option value="${k}" ${+sec.turn === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>` : ''}
+      ${mode === 'rotate' ? `<label class="switch"><input type="checkbox" data-sec="${esc(sec.id)}" data-field="nightLeader" ${sec.nightLeader ? 'checked' : ''}> One person on the ${esc(normTime(sec.nightTime || '10pm'))} night shift each day</label>` : ''}
+      <p class="hint">${MODE_HINT[mode]}</p></div>`;
+  }).join('');
+  const last = ui.lastDist;
+  const lastHtml = last ? `<div class="result ${last.gaps.length ? 'has-gaps' : ''}"><b>Distributed ${esc(last.label)}.</b>
+      ${last.gaps.length ? `<span>${last.gaps.length} team-days are below the minimum because too many people are on leave:</span><ul>${last.gaps.slice(0, 8).map(g => `<li>${esc(fmtShort(g.date))}: ${esc(g.sec)} has ${g.have} of ${g.need}</li>`).join('')}${last.gaps.length > 8 ? `<li>and ${last.gaps.length - 8} more</li>` : ''}</ul>` : '<span>Every team meets its minimum on every day.</span>'}
+      <div><button class="btn" data-act="tab" data-tab="roster">View the roster</button></div></div>` : '';
+  return `<section class="view">
+    <div class="card"><div class="card-head"><h2>Auto-distribute shifts</h2></div>
+      <p class="lead">Choose the period, check each team's rules, then distribute. Mark known leave (AL, PH, PD, C/OFF) in the roster first and it stays in place; days off and shift times are filled in around it.</p>
+      <div class="seg" role="group" aria-label="Which period"><button type="button" data-act="dist-mode" data-mode="new" aria-pressed="${ui.distMode === 'new'}">New period</button><button type="button" data-act="dist-mode" data-mode="current" aria-pressed="${ui.distMode === 'current'}">Existing period</button></div>
+      ${ui.distMode === 'new' ? `<div class="form-row"><label class="field">First day<input type="date" id="dist-start" value="${esc(start)}"></label>
+        <label class="field">Length<select id="dist-len">${[['month', 'To the end of the month'], ['7', '7 days'], ['14', '14 days'], ['15', '15 days'], ['16', '16 days']].map(o => `<option value="${o[0]}" ${String(ui.distLen) === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></label>
+        <div class="field"><span>Period</span><b style="min-height:38px;display:flex;align-items:center">${esc(periodLabel(preview))} · ${len} days</b></div></div>`
+      : (p ? `<div class="form-row">${periodBar(p)}</div><p class="muted">Redistributing replaces the shifts and days off in ${esc(periodLabel(p))}. Leave stays unless you untick the option below.</p>` : '<p class="muted">There is no period yet.</p>')}
+    </div>
+    <div class="sec-grid">${secCards}</div>
+    <div class="card">
+      <label class="switch"><input type="checkbox" id="keep-leave" ${ui.keepLeave ? 'checked' : ''}> Keep leave already entered (AL, PH, PD, C/OFF)</label>
+      <label class="switch"><input type="checkbox" id="keep-entered" ${ui.keepEntered ? 'checked' : ''}> Only fill empty cells (keep every shift already entered)</label>
+      <div><button class="btn primary lg" data-act="distribute">${ICON.wand} Distribute shifts</button></div>
+      <p id="dist-err" class="form-error" role="alert" hidden></p>
+      ${lastHtml}
+    </div></section>`;
+}
+function runDistribute() {
+  const err = $('#dist-err');
+  let p;
+  if (ui.distMode === 'new') {
+    const start = ui.distStart || nextStart(), days = distLength(start);
+    const end = addDays(start, days - 1);
+    const clash = S.periods.find(x => x.start <= end && periodEnd(x) >= start);
+    if (clash) { err.hidden = false; err.textContent = `That overlaps ${periodLabel(clash)}. Pick a first day after ${fmtShort(periodEnd(clash))}, or choose Existing period to redistribute it.`; return; }
+    snapshot();
+    p = { id: 'p' + start, start, days, cells: {} };
+    S.periods.push(p);
+  } else {
+    p = curPeriod(); if (!p) return;
+    snapshot();
+  }
+  const res = distribute(p, { keepLeave: ui.keepLeave, keepEntered: ui.keepEntered });
+  ui.periodId = p.id; ui.distStart = null;
+  ui.lastDist = { label: periodLabel(p), gaps: res.gaps };
+  touch(); ui.tab = 'roster'; render();
+  toast(`Shifts distributed for ${periodLabel(p)}${res.gaps.length ? ' · ' + res.gaps.length + ' team-days below minimum' : ''}.`, { label: 'Undo', fn: undo });
+}
+
+/* ---------- analysis view ---------- */
+function analysisHtml(p) {
+  if (!p) return `<section class="view"><div class="card empty"><p>No roster to analyse yet.</p></div></section>`;
+  const A = analyze(p), today = todayYmd(), ti = A.dates.indexOf(today);
+  const kpi = (k, v, s, cls) => `<div class="kpi ${cls || ''}"><span class="k">${k}</span><span class="v">${v}</span><span class="s">${s}</span></div>`;
+  const staffN = A.people.length;
+  return `<section class="view">
+    <div class="toolbar">${periodBar(p)}<div class="tb-right"><button class="btn" data-act="export-xlsx">${ICON.xls}<span class="t">Excel with summary</span></button></div></div>
+    <div class="kpis">
+      ${ti >= 0 ? kpi('On duty today', A.totals[ti], fmtShort(today) + ' · ' + staffN + ' on roster') : kpi('Staff on roster', staffN, 'in ' + periodLabel(p))}
+      ${kpi('Duty shifts', A.duty, 'Average ' + (A.dates.length ? (A.duty / A.dates.length).toFixed(1) : 0) + ' a day')}
+      ${kpi('Days off', A.offs, 'Average ' + (staffN ? (A.offs / staffN).toFixed(1) : 0) + ' per person')}
+      ${kpi('Leave days', A.leave, `AL ${A.codes.AL} · PH ${A.codes.PH} · PD ${A.codes.PD} · C/OFF ${A.codes['C/OFF']}`)}
+      ${kpi('Days below minimum', A.gapDays, A.gaps.length ? A.gaps.length + ' team-days short' : 'Every team covered', A.gapDays ? 'alert' : '')}
+    </div>
+    <div class="charts">
+      <div class="card chart span2" data-chart="daily"><div class="card-head"><h3>On duty each day, by team</h3><p>Dashed line: total minimum cover (${A.needTotal})</p></div>
+        <div class="chart-legend">${A.groups.map((g, i) => `<span><i style="background:var(--s${(i % 5) + 1})"></i>${esc(g.sec.name)}</span>`).join('')}</div><div class="plot"></div></div>
+      <div class="card chart" data-chart="times"><div class="card-head"><h3>Shift start times</h3><p>Number of shifts starting at each time</p></div><div class="plot"></div></div>
+      <div class="card chart" data-chart="codes"><div class="card-head"><h3>Days off and leave</h3><p>Days in this period, by type</p></div><div class="plot"></div></div>
+      <div class="card chart span2" data-chart="people"><div class="card-head"><h3>Workload by staff member</h3><p>Duty days, days off and leave in ${esc(periodLabel(p))}</p></div>
+        <div class="chart-legend"><span><i style="background:var(--s1)"></i>Duty</span><span><i style="background:var(--s2)"></i>Day off</span><span><i style="background:var(--s4)"></i>Leave</span></div><div class="plot"></div></div>
+      <div class="card span2"><div class="card-head"><h3>Days below minimum cover</h3><p>${A.gaps.length ? 'Fix these in the roster or adjust the minimum in Auto-distribute' : 'None in this period'}</p></div>
+        ${A.gaps.length ? `<div class="tbl-wrap"><table class="gap-table"><thead><tr><th>Date</th><th>Team</th><th>On duty</th><th>Minimum</th><th>Status</th></tr></thead><tbody>${A.gaps.map(g => `<tr><td>${esc(fmtShort(g.date))}</td><td>${esc(g.sec)}</td><td class="num">${g.have}</td><td class="num">${g.need}</td><td><span class="status crit">Short by ${g.need - g.have}</span></td></tr>`).join('')}</tbody></table></div>` : `<p><span class="status good">Every team meets its minimum on every day</span></p>`}
+      </div>
+    </div></section>`;
+}
+function niceMax(v) { if (v <= 5) return Math.max(1, Math.ceil(v)); const step = v <= 10 ? 2 : v <= 25 ? 5 : 10; return Math.ceil(v / step) * step; }
+function topRound(x, y, w, h, r) {
+  if (h <= 0) return '';
+  r = Math.min(r, w / 2, h);
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+}
+function rightRound(x, y, w, h, r) {
+  if (w <= 0) return '';
+  r = Math.min(r, h / 2, w);
+  return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`;
+}
+function drawCharts(p) {
+  const A = analyze(p);
+  $$('.chart[data-chart]').forEach(card => {
+    const plot = $('.plot', card), W = Math.max(280, Math.floor(plot.clientWidth || 600)), kind = card.dataset.chart;
+    if (kind === 'daily') plot.innerHTML = chartDaily(A, W);
+    if (kind === 'times') plot.innerHTML = chartBars(A.times.map(t => ({ label: t.label, n: t.n, color: 'var(--s1)', tip: `<b>${esc(t.label)}</b><div class="row"><span>Shifts</span><b>${t.n}</b></div>` })), W, true);
+    if (kind === 'codes') {
+      const rows = CODES.map(c => ({ label: c.short, n: A.codes[c.v] || 0, color: c.v === 'O' ? 'var(--s2)' : `var(--${c.cls}-fg)`, tip: `<b>${esc(c.label)}</b> <span class="ar">${esc(c.ar)}</span><div class="row"><span>Days</span><b>${A.codes[c.v] || 0}</b></div>` }));
+      plot.innerHTML = chartHBars(rows, W);
+    }
+    if (kind === 'people') plot.innerHTML = chartPeople(A, W);
+  });
+}
+function chartDaily(A, W) {
+  const H = 240, m = { l: 30, r: 12, t: 12, b: 38 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b, n = A.dates.length;
+  const max = niceMax(Math.max(A.needTotal, ...A.totals, 1));
+  const y = v => m.t + ih - (v / max) * ih, band = iw / n, bw = Math.max(6, Math.min(34, band * 0.62));
+  const tick = max <= 5 ? 1 : max <= 10 ? 2 : max <= 25 ? 5 : 10, ticks = [];
+  for (let v = 0; v <= max; v += tick) ticks.push(v);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Staff on duty each day, stacked by team"><g class="grid">${ticks.map(t => `<line x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/><text x="${m.l - 6}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('')}</g>`;
+  A.dates.forEach((dt, d) => {
+    const cx = m.l + band * d + band / 2, x0 = cx - bw / 2;
+    let acc = 0; const segs = [];
+    A.groups.forEach((g, i) => { const v = A.daily[d][g.sec.id] || 0; if (v) segs.push({ v, i, name: g.sec.name }); });
+    segs.forEach((sg, k) => {
+      const y1 = y(acc + sg.v), y0 = y(acc), h = Math.max(0, y0 - y1 - (k ? 2 : 0));
+      const top = k === segs.length - 1;
+      s += top ? `<path d="${topRound(x0, y1, bw, h, 4)}" fill="var(--s${(sg.i % 5) + 1})"/>` : `<rect x="${x0}" y="${y1}" width="${bw}" height="${h}" fill="var(--s${(sg.i % 5) + 1})"/>`;
+      acc += sg.v;
+    });
+    const x = dparts(dt), short = A.totals[d] < A.needTotal;
+    const tip = `<b>${esc(fmtShort(dt))}</b>${A.groups.map((g, i) => `<div class="row"><span><i style="background:var(--s${(i % 5) + 1})"></i>${esc(g.sec.name)}</span><b>${A.daily[d][g.sec.id] || 0}</b></div>`).join('')}<div class="row"><span>Total</span><b>${A.totals[d]}</b></div>`;
+    s += `<text x="${cx}" y="${H - m.b + 15}" text-anchor="middle" ${short ? 'style="fill:var(--crit);font-weight:700"' : ''}>${x.d}</text><text x="${cx}" y="${H - m.b + 28}" text-anchor="middle" style="font-size:9px">${DAYS[x.w].charAt(0)}</text>`;
+    s += `<rect class="hit" x="${m.l + band * d}" y="${m.t}" width="${band}" height="${ih}" data-tip="${esc(tip)}"/>`;
+  });
+  s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(A.needTotal)}" y2="${y(A.needTotal)}" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  s += `<line class="axis" x1="${m.l}" x2="${W - m.r}" y1="${m.t + ih}" y2="${m.t + ih}"/></svg>`;
+  return s;
+}
+function chartBars(rows, W) {
+  if (!rows.length) return '<p class="muted">No shifts in this period.</p>';
+  const H = 220, m = { l: 28, r: 8, t: 18, b: 28 }, iw = W - m.l - m.r, ih = H - m.t - m.b, n = rows.length;
+  const max = niceMax(Math.max(...rows.map(r => r.n), 1)), y = v => m.t + ih - (v / max) * ih;
+  const band = iw / n, bw = Math.max(6, Math.min(30, band * 0.6));
+  const top = rows.reduce((a, r, i) => (r.n > rows[a].n ? i : a), 0);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Shifts by start time"><g class="grid">${[0, max / 2, max].map(t => `<line x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/><text x="${m.l - 6}" y="${y(t) + 4}" text-anchor="end">${Math.round(t)}</text>`).join('')}</g>`;
+  rows.forEach((r, i) => {
+    const cx = m.l + band * i + band / 2, h = (r.n / max) * ih;
+    s += `<path d="${topRound(cx - bw / 2, y(r.n), bw, h, 4)}" fill="${r.color}"/>`;
+    s += `<text x="${cx}" y="${H - m.b + 15}" text-anchor="middle" style="font-size:${n > 10 ? 9 : 11}px">${esc(r.label)}</text>`;
+    if (i === top) s += `<text class="val" x="${cx}" y="${y(r.n) - 5}" text-anchor="middle">${r.n}</text>`;
+    s += `<rect class="hit" x="${m.l + band * i}" y="${m.t}" width="${band}" height="${ih}" data-tip="${esc(r.tip)}"/>`;
+  });
+  return s + `<line class="axis" x1="${m.l}" x2="${W - m.r}" y1="${m.t + ih}" y2="${m.t + ih}"/></svg>`;
+}
+function chartHBars(rows, W) {
+  const rh = 30, H = rows.length * rh + 8, m = { l: 56, r: 36 }, iw = W - m.l - m.r;
+  const max = Math.max(...rows.map(r => r.n), 1);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Days off and leave by type">`;
+  rows.forEach((r, i) => {
+    const yy = 4 + i * rh, w = (r.n / max) * iw;
+    s += `<text x="${m.l - 8}" y="${yy + rh / 2 + 4}" text-anchor="end" style="font-weight:600">${esc(r.label)}</text>`;
+    s += `<rect x="${m.l}" y="${yy + 6}" width="${iw}" height="${rh - 12}" rx="4" fill="var(--surface-2)"/>`;
+    if (w > 0) s += `<path d="${rightRound(m.l, yy + 6, w, rh - 12, 4)}" fill="${r.color}"/>`;
+    s += `<text class="val" x="${m.l + w + 6}" y="${yy + rh / 2 + 4}">${r.n}</text>`;
+    s += `<rect class="hit" x="0" y="${yy}" width="${W}" height="${rh}" data-tip="${esc(r.tip)}"/>`;
+  });
+  return s + '</svg>';
+}
+function chartPeople(A, W) {
+  const rh = 26, ppl = A.people, H = ppl.length * rh + 8, m = { l: 92, r: 40 }, iw = W - m.l - m.r;
+  const max = Math.max(...ppl.map(p => p.duty + p.off + p.leave), 1);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Duty days, days off and leave for each staff member">`;
+  ppl.forEach((p, i) => {
+    const yy = 4 + i * rh, bh = rh - 10, sc = iw / max;
+    s += `<text x="${m.l - 8}" y="${yy + rh / 2 + 4}" text-anchor="end" style="fill:var(--ink-2);font-weight:600">${esc(p.name)}</text>`;
+    let x = m.l;
+    const parts = [[p.duty, 'var(--s1)'], [p.off, 'var(--s2)'], [p.leave, 'var(--s4)']].filter(q => q[0] > 0);
+    parts.forEach((q, k) => {
+      const w = q[0] * sc - (k < parts.length - 1 ? 2 : 0);
+      s += k === parts.length - 1 ? `<path d="${rightRound(x, yy + 5, w, bh, 4)}" fill="${q[1]}"/>` : `<rect x="${x}" y="${yy + 5}" width="${Math.max(0, w)}" height="${bh}" fill="${q[1]}"/>`;
+      x += q[0] * sc;
+    });
+    s += `<text class="val" x="${x + 6}" y="${yy + rh / 2 + 4}">${p.duty}</text>`;
+    const tip = `<b>${esc(p.name)}</b> · ${esc(p.post || '')}<div class="row"><span><i style="background:var(--s1)"></i>Duty days</span><b>${p.duty}</b></div><div class="row"><span>Night shifts</span><b>${p.night}</b></div><div class="row"><span><i style="background:var(--s2)"></i>Days off</span><b>${p.off}</b></div><div class="row"><span><i style="background:var(--s4)"></i>Leave</span><b>${p.leave}</b></div>${p.none ? `<div class="row"><span>Not on roster</span><b>${p.none}</b></div>` : ''}`;
+    s += `<rect class="hit" x="0" y="${yy}" width="${W}" height="${rh}" data-tip="${esc(tip)}"/>`;
+  });
+  return s + '</svg>';
+}
+
+/* ---------- staff view ---------- */
+function staffHtml() {
+  const admin = isAdmin();
+  const secOpts = sel => S.sections.map(s => `<option value="${esc(s.id)}" ${s.id === sel ? 'selected' : ''}>${esc(s.name)}</option>`).join('');
+  const active = S.staff.filter(s => s.active !== false), former = S.staff.filter(s => s.active === false);
+  const groups = S.sections.map(sec => ({ sec, list: active.filter(s => s.section === sec.id) })).filter(g => g.list.length || admin);
+  const table = g => `<div class="tbl-wrap"><table class="staff-table"><thead><tr><th>Name</th><th>Post</th><th>Shift time(s)</th>${admin ? '<th>Team</th><th></th>' : ''}</tr></thead><tbody>${g.list.map((s, i) => admin ? `<tr>
+      <td><input type="text" value="${esc(s.name)}" data-staff="${esc(s.id)}" data-field="name" aria-label="Name"></td>
+      <td><input type="text" value="${esc(s.post || '')}" data-staff="${esc(s.id)}" data-field="post" aria-label="Post"></td>
+      <td><input type="text" value="${esc(s.shift || '')}" data-staff="${esc(s.id)}" data-field="shift" aria-label="Shift times" placeholder="e.g. 8pm or 7pm, 8pm"></td>
+      <td><select data-staff="${esc(s.id)}" data-field="section" aria-label="Team">${secOpts(s.section)}</select></td>
+      <td class="acts"><button class="icon-btn" data-act="staff-move" data-s="${esc(s.id)}" data-dir="-1" aria-label="Move up" ${i === 0 ? 'disabled' : ''}>↑</button> <button class="icon-btn" data-act="staff-move" data-s="${esc(s.id)}" data-dir="1" aria-label="Move down" ${i === g.list.length - 1 ? 'disabled' : ''}>↓</button> <button class="btn danger" data-act="staff-remove" data-s="${esc(s.id)}">Remove</button></td></tr>`
+    : `<tr><td><b>${esc(s.name)}</b></td><td>${esc(s.post || '')}</td><td>${esc(s.shift || '')}</td></tr>`).join('') || `<tr><td colspan="5" class="muted">No staff in this team.</td></tr>`}</tbody></table></div>`;
+  return `<section class="view">
+    <div class="card-head"><h2>Staff</h2><p>${active.length} on the roster in ${S.sections.length} teams${admin ? '. Changes save as you type.' : ''}</p></div>
+    ${admin ? `<form class="card" id="add-staff"><h3>Add a staff member</h3><div class="form-row">
+      <label class="field">Name<input type="text" id="ns-name" required></label>
+      <label class="field">Team<select id="ns-sec">${secOpts('secops')}</select></label>
+      <label class="field">Post<input type="text" id="ns-post" placeholder="e.g. Gate, Lobby, W.Bar"></label>
+      <label class="field">Shift time(s)<input type="text" id="ns-shift" placeholder="e.g. 7pm"></label>
+      <button class="btn primary" type="submit">Add</button></div><p class="muted">Several times separated by commas rotate day by day when shifts are distributed.</p></form>` : ''}
+    ${groups.map(g => `<div class="card"><h3>${esc(g.sec.name)} <span class="muted">· ${g.list.length}</span></h3>${table(g)}</div>`).join('')}
+    ${admin && former.length ? `<div class="card"><h3>Former staff</h3><p class="muted">Removed from new rosters. Their past shifts stay in earlier periods.</p>${former.map(s => `<div class="form-row" style="align-items:center"><span><b>${esc(s.name)}</b> · ${esc(s.post || '')}</span><button class="btn" data-act="staff-restore" data-s="${esc(s.id)}">Put back on the roster</button></div>`).join('')}</div>` : ''}
+  </section>`;
+}
+
+/* ---------- rules & settings ---------- */
+function rulesHtml(p) {
+  const admin = isAdmin();
+  const rules = admin
+    ? `<ol class="rules-list">${S.rules.map((r, i) => `<li><span class="n">${i + 1}</span><textarea data-rule="${i}" aria-label="Rule ${i + 1}">${esc(r)}</textarea><button class="icon-btn del" data-act="rule-del" data-i="${i}" aria-label="Delete rule ${i + 1}">${ICON.close}</button></li>`).join('')}</ol><div><button class="btn" data-act="rule-add">Add a rule</button></div>`
+    : `<ol class="rules-list">${S.rules.map((r, i) => `<li><span class="n">${i + 1}</span><span>${esc(r)}</span></li>`).join('')}</ol>`;
+  const timings = admin
+    ? `<div class="tbl-wrap"><table class="staff-table" style="min-width:0"><thead><tr><th>Duty</th><th>Time</th><th></th></tr></thead><tbody>${S.timings.map((t, i) => `<tr><td><input type="text" value="${esc(t.label)}" data-timing="${i}" data-field="label" aria-label="Duty"></td><td><input type="text" value="${esc(t.time)}" data-timing="${i}" data-field="time" aria-label="Time"></td><td class="acts"><button class="icon-btn" data-act="timing-del" data-i="${i}" aria-label="Delete">${ICON.close}</button></td></tr>`).join('')}</tbody></table></div><div><button class="btn" data-act="timing-add">Add a timing</button></div>`
+    : `<dl class="kv">${S.timings.map(t => `<dt>${esc(t.label)}</dt><dd>${esc(t.time)}</dd>`).join('')}</dl>`;
+  const adminCards = admin ? `
+    <div class="card"><h3>Logo</h3><p class="muted">Shown at the top of the portal and of the printed sheet, PDF and Excel.</p>
+      <div>${S.org.logo ? logoHtml('framed') : '<span class="muted">No logo yet.</span>'}</div>
+      <div class="form-row" style="align-items:center"><label class="btn" for="logo-file" style="cursor:pointer">${S.org.logo ? 'Replace logo' : 'Add a logo'}</label><input type="file" id="logo-file" accept="image/png,image/jpeg,image/webp" hidden>${S.org.logo ? '<button class="btn danger" data-act="logo-remove">Remove logo</button>' : ''}</div></div>
+    <div class="card"><h3>Your password</h3>
+      <form id="pw-form" class="form-row"><label class="field">Current password<input type="password" id="pw-cur" autocomplete="current-password"></label><label class="field">New password<input type="password" id="pw-new" autocomplete="new-password"></label><button class="btn primary" type="submit">Change password</button></form>
+      <p id="pw-msg" role="status" hidden></p></div>
+    <div class="card"><h3>Admin users</h3>
+      <dl class="kv">${S.users.map(u => `<dt>${esc(u.name)}</dt><dd>User ID: ${esc(u.name)} ${u.u !== ui.session.u ? `<button class="btn danger" data-act="user-del" data-u="${esc(u.u)}" style="margin-left:8px;min-height:28px">Remove</button>` : '<span class="muted">(you)</span>'}</dd>`).join('')}</dl>
+      <form id="user-form" class="form-row"><label class="field">Name (used as User ID)<input type="text" id="nu-name"></label><label class="field">Password<input type="password" id="nu-pass" autocomplete="new-password"></label><button class="btn" type="submit">Add admin</button></form>
+      <p id="nu-msg" role="status" hidden></p></div>
+    <div class="card"><h3>Data</h3>
+      <p class="muted">${IN_CLAUDE ? 'Changes are saved into this portal when you press Save changes. Everyone who opens it sees the saved roster.' : 'Changes are saved in this browser on this device. Download a backup to move them to another device.'}</p>
+      <div class="form-row" style="align-items:center"><button class="btn" data-act="backup">Download backup (.json)</button>
+        <label class="btn" for="restore-file" style="cursor:pointer">Restore a backup</label><input type="file" id="restore-file" accept=".json,application/json" hidden></div>
+      ${p ? `<div><button class="btn danger" data-act="period-delete">Delete the ${esc(periodLabel(p))} period</button></div>` : ''}
+      <p class="muted">Last change: ${esc(new Date(ts(S.updated)).toLocaleString())}${S.updatedBy ? ' by ' + esc(S.updatedBy) : ''}</p></div>` : '';
+  return `<section class="view">
+    <div class="settings-grid">
+      <div class="card" style="grid-column:1/-1"><div class="card-head"><h2>Work instructions</h2><p class="ar">تعليمات العمل</p></div>${rules}</div>
+      <div class="card"><h3>Shift timings</h3>${timings}</div>
+      <div class="card"><h3>Roster codes</h3>${legendHtml()}</div>
+      ${adminCards}
+      <div class="card"><h3>About</h3><dl class="kv"><dt>Portal</dt><dd>Security Roster Portal</dd><dt>Property</dt><dd>${esc(S.org.property)}</dd><dt>Department</dt><dd>${esc(S.org.dept)}</dd><dt>Developer</dt><dd>${esc(S.org.developer || 'Ms. Amina Qatan')}</dd><dt>Database</dt><dd>Oracle APEX script included with the portal files</dd></dl></div>
+    </div></section>`;
+}
+
+/* ---------- overlays ---------- */
+function renderOverlay() {
+  const host = $('#overlay'); if (!host) return;
+  const m = ui.modal;
+  if (!m) { host.innerHTML = ''; host.className = ''; return; }
+  host.className = 'overlay';
+  let inner = '';
+  if (m.type === 'cell') inner = cellSheet(m);
+  else if (m.type === 'person') inner = personSheet(m);
+  else if (m.type === 'print') inner = printSheetHtml(m);
+  else if (m.type === 'confirm') inner = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cf-title"><div class="sheet-head"><h3 id="cf-title">${esc(m.title)}</h3><button class="icon-btn" data-act="close-modal" aria-label="Close">${ICON.close}</button></div><div class="sheet-body"><p>${esc(m.text)}</p></div><div class="sheet-foot"><button class="btn" data-act="close-modal">Cancel</button><button class="btn ${m.danger ? 'danger' : 'primary'}" data-act="confirm-ok">${esc(m.ok)}</button></div></div>`;
+  host.innerHTML = `<div class="backdrop" data-act="close-modal"></div>${inner}`;
+  const f = host.querySelector('[data-autofocus]') || host.querySelector('.sheet button, .sheet input');
+  if (f && m.focus !== false) { try { f.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+}
+function cellSheet(m) {
+  const p = curPeriod(), s = S.staff.find(x => x.id === m.s); if (!p || !s) return '';
+  const row = ensureRow(p, s.id), x = pv(row[m.d]), sec = secById(s.section);
+  const dt = addDays(p.start, m.d);
+  const times = Array.from(new Set(staffTimes(s).concat(STD_TIMES))).sort((a, b) => (toMin(a) ?? 9999) - (toMin(b) ?? 9999));
+  const cur = x.v;
+  const wo = m.wo != null ? m.wo : !!x.wo;
+  const chip = (v, label, cls) => `<button class="chip ${cls}" data-act="set" data-v="${esc(v)}" aria-pressed="${x.kind === 'duty' ? normTime(x.time) === v : cur === v}">${esc(label)}</button>`;
+  return `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cs-title">
+    <div class="sheet-head"><div><p class="eyebrow">${esc(sec ? sec.name : '')} · ${esc(s.post || '')}</p><h3 id="cs-title">${esc(s.name)}</h3><p class="sub">${esc(fmtLong(dt))} · now <span class="pill ${cellClass(x)}">${esc(cellText(x) || 'not on roster')}</span></p></div><button class="icon-btn" data-act="close-modal" aria-label="Close">${ICON.close}</button></div>
+    <div class="sheet-body">
+      <p class="grp">Day off or leave</p>
+      <div class="chips">${chip('O', 'Day off', 'c-off')}${chip('AL', 'AL · Annual leave', 'c-al')}${chip('PH', 'PH · Holiday', 'c-ph')}${chip('PD', 'PD · Compensation', 'c-pd')}${chip('C/OFF', 'C/OFF · Paid leave', 'c-coff')}${chip('', 'Not on roster', 'c-na')}</div>
+      <p class="grp">Shift start</p>
+      <div class="chips">${times.map(t => chip(t, t, '')).join('')}</div>
+      <div class="other-time"><span class="muted">Other time</span>
+        <select id="ot-h" aria-label="Hour">${Array.from({ length: 12 }, (_, i) => `<option>${i + 1}</option>`).join('')}</select>
+        <select id="ot-m" aria-label="Minutes"><option>00</option><option>15</option><option>30</option><option>45</option></select>
+        <select id="ot-ap" aria-label="am or pm"><option>am</option><option selected>pm</option></select>
+        <button class="btn" data-act="set-other">Set</button></div>
+      <label class="switch"><input type="checkbox" id="wo-toggle" ${wo ? 'checked' : ''}> Working on a day off (WO)</label>
+    </div>
+    <div class="sheet-foot"><button class="btn" data-act="edit-step" data-dir="-1" ${m.d === 0 ? 'disabled' : ''}>${ICON.left} Previous day</button>
+      <label class="chk"><input type="checkbox" id="auto-next" ${ui.autoNext ? 'checked' : ''}> Next day after choosing</label>
+      <button class="btn" data-act="edit-step" data-dir="1" ${m.d >= p.days - 1 ? 'disabled' : ''}>Next day ${ICON.right}</button></div></div>`;
+}
+function personSheet(m) {
+  const p = curPeriod(), s = S.staff.find(x => x.id === m.s); if (!p || !s) return '';
+  const row = ensureRow(p, s.id), dates = periodDates(p), today = todayYmd(), sec = secById(s.section);
+  const c = { duty: 0, off: 0, leave: 0, night: 0 };
+  row.forEach(v => { const x = pv(v); if (x.kind === 'duty') { c.duty++; if (isNight(x.min)) c.night++; } else if (x.kind === 'off') c.off++; else if (x.kind === 'leave') c.leave++; });
+  return `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ps-title">
+    <div class="sheet-head"><div><p class="eyebrow">${esc(sec ? sec.name : '')} · ${esc(s.post || '')}</p><h3 id="ps-title">${esc(s.name)}</h3><p class="sub">${esc(periodLabel(p, true))}</p></div><button class="icon-btn" data-act="close-modal" aria-label="Close">${ICON.close}</button></div>
+    <div class="sheet-body">
+      <div class="stat-row"><span><b>${c.duty}</b>duty days</span><span><b>${c.night}</b>night shifts</span><span><b>${c.off}</b>days off</span><span><b>${c.leave}</b>leave</span></div>
+      <div class="person-list">${row.map((v, d) => { const x = pv(v); return `<div class="person-day ${cellClass(x)} ${dates[d] === today ? 'today' : ''}"><span class="d">${esc(fmtShort(dates[d]))}</span><span class="v">${esc(cellText(x) || '—')}</span></div>`; }).join('')}</div>
+    </div>
+    ${isAdmin() ? `<div class="sheet-foot"><span class="muted">Default shift: ${esc(s.shift || '—')}</span><button class="btn" data-act="goto-staff">Edit staff details</button></div>` : ''}</div>`;
+}
+function printSheetHtml(m) {
+  const p = curPeriod();
+  const note = IN_CLAUDE
+    ? `<p class="note">Printing from inside Claude goes through the PDF: save the one-page PDF below, then open it and print. Opened from your own website or computer, the Print button here prints directly.</p>`
+    : '';
+  return `<div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="pr-title">
+    <div class="sheet-head"><div><p class="eyebrow">One page · A4 landscape</p><h3 id="pr-title">Print ${esc(p ? periodLabel(p) : '')}</h3></div><button class="icon-btn" data-act="close-modal" aria-label="Close">${ICON.close}</button></div>
+    <div class="sheet-body">${note}<div class="preview">${m.img ? `<img src="${m.img}" alt="Preview of the printed roster sheet">` : '<p class="muted">Preparing the sheet…</p>'}</div></div>
+    <div class="sheet-foot"><button class="btn" data-act="export-xlsx">${ICON.xls} Save Excel</button><button class="btn ${IN_CLAUDE ? 'primary' : ''}" data-act="export-pdf">${ICON.pdf} Save PDF</button>${IN_CLAUDE ? '' : `<button class="btn primary" data-act="print-now" ${m.img ? '' : 'disabled'}>${ICON.print} Print</button>`}</div></div>`;
+}
+function openModal(m) { ui.modal = m; renderOverlay(); }
+function closeModal() { ui.modal = null; renderOverlay(); }
+
+/* ---------- toast & tooltip ---------- */
+function toast(msg, action) {
+  let t = $('#toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.innerHTML = `<span>${esc(msg)}</span>${action ? `<button type="button">${esc(action.label)}</button>` : ''}`;
+  t.hidden = false;
+  if (action) t.querySelector('button').onclick = () => { t.hidden = true; action.fn(); };
+  clearTimeout(ui.toastTimer); ui.toastTimer = setTimeout(() => { t.hidden = true; }, action ? 7000 : 4200);
+}
+let tipEl = null;
+function showTip(target, x, y) {
+  if (!tipEl) { tipEl = document.createElement('div'); tipEl.className = 'tip'; tipEl.hidden = true; document.body.appendChild(tipEl); }
+  tipEl.innerHTML = target.getAttribute('data-tip'); tipEl.hidden = false;
+  const r = tipEl.getBoundingClientRect();
+  let left = x + 14, top = y + 14;
+  if (left + r.width > window.innerWidth - 8) left = x - r.width - 14;
+  if (top + r.height > window.innerHeight - 8) top = y - r.height - 14;
+  tipEl.style.left = Math.max(8, left) + 'px'; tipEl.style.top = Math.max(8, top) + 'px';
+}
+const hideTip = () => { if (tipEl) tipEl.hidden = true; };
+
+/* ================= exports ================= */
+async function loadFonts() {
+  if (!document.fonts || !document.fonts.load) return;
+  const loads = ['700 16px "IBM Plex Sans"', '600 16px "IBM Plex Sans"', '400 16px "IBM Plex Sans"', '400 16px "Marcellus"', '500 16px "IBM Plex Sans Arabic"', '600 16px "IBM Plex Sans Arabic"']
+    .map(f => document.fonts.load(f, f.includes('Arabic') ? 'تعليمات' : 'Roster 0123'));
+  await Promise.race([Promise.all(loads).catch(() => null), new Promise(r => setTimeout(r, 2500))]);
+}
+const PRINT = {
+  navy: '#0C2D5B', gold: '#C99B4E', ink: '#13233A', ink2: '#44546B', muted: '#6B7A8F', line: '#C3CEDC', head: '#EEF2F7', band: '#E3EBF6', wk: '#F6EEDD', white: '#FFFFFF',
+  codes: { 'c-off': ['#FBEFC8', '#6B5009'], 'c-al': ['#F8D3CF', '#A3241D'], 'c-ph': ['#F6CDEB', '#8B1E74'], 'c-pd': ['#E2D7F7', '#52329A'], 'c-coff': ['#CDEBE4', '#11604F'], 'c-wo': ['#D2EED8', '#1B6A33'], 'c-na': ['#E3E7ED', '#8492A6'], 'c-night': ['#E7EEF9', '#1F4E8C'], 'c-day': ['#FFFFFF', '#13233A'] }
+};
+const FB = '"IBM Plex Sans", "Segoe UI", Arial, sans-serif', FA = '"IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif', FD = '"Marcellus", Georgia, serif';
+function fitFont(ctx, text, weight, size, family, maxW, min) {
+  let s = size;
+  ctx.font = `${weight} ${s}px ${family}`;
+  while (s > (min || 6) && ctx.measureText(text).width > maxW) { s -= 0.5; ctx.font = `${weight} ${s}px ${family}`; }
+  return s;
+}
+async function renderSheetCanvas(p) {
+  await loadFonts();
+  const W = 1400, H = 990, SC = 2.4;
+  const cv = document.createElement('canvas'); cv.width = Math.round(W * SC); cv.height = Math.round(H * SC);
+  const ctx = cv.getContext('2d'); ctx.scale(SC, SC);
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+  const A = analyze(p), n = A.dates.length, M = 22, BH = 62;
+  const logo = await loadImg(S.org.logo);
+  ctx.textBaseline = 'middle';
+  // title band, logo on a white plate at the top left
+  ctx.fillStyle = PRINT.navy; ctx.fillRect(M, M, W - 2 * M, BH);
+  ctx.fillStyle = PRINT.gold; ctx.fillRect(M, M + BH, W - 2 * M, 2.5);
+  let tx0 = M + 18;
+  if (logo) {
+    const lh = BH - 14, lw = lh * logo.naturalWidth / logo.naturalHeight, px = M + 7, py = M + 5;
+    ctx.fillStyle = '#fff'; ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(px, py, lw + 14, BH - 10, 6); else ctx.rect(px, py, lw + 14, BH - 10);
+    ctx.fill();
+    ctx.drawImage(logo, px + 7, py + 2, lw, lh);
+    tx0 = px + lw + 14 + 16;
+  }
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.font = `400 23px ${FD}`;
+  ctx.fillText('SECURITY DEPARTMENT DUTY ROSTER', tx0, M + 25);
+  ctx.fillStyle = '#E2C48F'; ctx.font = `500 11.5px ${FB}`;
+  ctx.fillText(S.org.property.toUpperCase() + '  ·  ' + S.org.dept.toUpperCase(), tx0, M + 45);
+  ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.font = `600 17px ${FB}`;
+  ctx.fillText(periodLabel(p, true), W - M - 18, M + 24);
+  ctx.fillStyle = '#C3D2E8'; ctx.font = `400 10.5px ${FB}`;
+  ctx.fillText('Printed ' + fmtLong(todayYmd()), W - M - 18, M + 44);
+  // geometry
+  const ty = M + BH + 12, nameW = 118, postW = 88, dayW = (W - 2 * M - nameW - postW) / n;
+  const headH = 40, bandH = 18, totH = 20;
+  const staffCount = A.groups.reduce((a, g) => a + g.members.length, 0);
+  const bottomH = 132 + 8 + 76 + 18;
+  const availRows = H - M - bottomH - 12 - ty - headH - A.groups.length * bandH - totH;
+  const rowH = clamp(availRows / Math.max(1, staffCount), 12, 30);
+  const x0 = M, xDays = M + nameW, xPost = xDays + n * dayW, tableW = W - 2 * M;
+  // header rows
+  ctx.fillStyle = PRINT.head; ctx.fillRect(x0, ty, tableW, headH);
+  A.dates.forEach((dt, d) => {
+    const x = dparts(dt);
+    if (x.w === 5 || x.w === 6) { ctx.fillStyle = PRINT.wk; ctx.fillRect(xDays + d * dayW, ty, dayW, headH); }
+    ctx.textAlign = 'center'; ctx.fillStyle = PRINT.ink; ctx.font = `700 12.5px ${FB}`;
+    ctx.fillText(x.d + '-' + MON[x.m], xDays + d * dayW + dayW / 2, ty + 13);
+    ctx.fillStyle = PRINT.ink2; ctx.font = `600 10px ${FB}`;
+    ctx.fillText(DAYS[x.w], xDays + d * dayW + dayW / 2, ty + 30);
+  });
+  ctx.textAlign = 'left'; ctx.fillStyle = PRINT.muted; ctx.font = `600 10px ${FB}`;
+  ctx.fillText('DATE', x0 + 8, ty + 13); ctx.fillText('DAY', x0 + 8, ty + 30);
+  ctx.textAlign = 'center'; ctx.fillText('POST', xPost + postW / 2, ty + 21);
+  let y = ty + headH;
+  const hl = (yy) => { ctx.strokeStyle = PRINT.line; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(x0, yy); ctx.lineTo(x0 + tableW, yy); ctx.stroke(); };
+  hl(ty); hl(y);
+  A.groups.forEach(g => {
+    ctx.fillStyle = PRINT.band; ctx.fillRect(x0, y, tableW, bandH);
+    ctx.textAlign = 'left'; ctx.fillStyle = PRINT.navy;
+    fitFont(ctx, g.sec.name.toUpperCase(), 400, 12, FD, nameW - 12, 7);
+    ctx.fillText(g.sec.name.toUpperCase(), x0 + 8, y + bandH / 2 + 0.5);
+    const need = +g.sec.need || 0;
+    A.dates.forEach((dt, d) => {
+      const h = A.daily[d][g.sec.id] || 0;
+      ctx.textAlign = 'center'; ctx.font = `600 9.5px ${FB}`; ctx.fillStyle = need && h < need ? '#B3261E' : PRINT.ink2;
+      ctx.fillText(String(h), xDays + d * dayW + dayW / 2, y + bandH / 2 + 0.5);
+    });
+    if (need) { ctx.textAlign = 'center'; ctx.fillStyle = PRINT.muted; ctx.font = `500 9px ${FB}`; ctx.fillText('min ' + need, xPost + postW / 2, y + bandH / 2 + 0.5); }
+    y += bandH; hl(y);
+    g.members.forEach(s => {
+      const row = ensureRow(p, s.id);
+      ctx.textAlign = 'left'; ctx.fillStyle = PRINT.ink;
+      fitFont(ctx, s.name, 700, Math.min(13, rowH * 0.5), FB, nameW - 14, 7);
+      ctx.fillText(s.name, x0 + 8, y + rowH / 2 + 0.5);
+      row.forEach((v, d) => {
+        const x = pv(v), cls = cellClass(x), col = PRINT.codes[cls] || PRINT.codes['c-day'];
+        const cx = xDays + d * dayW;
+        ctx.fillStyle = col[0]; ctx.fillRect(cx, y, dayW, rowH);
+        if (cls === 'c-na') { ctx.strokeStyle = '#CDD4DE'; ctx.lineWidth = 0.6; for (let k = -rowH; k < dayW; k += 6) { ctx.beginPath(); ctx.moveTo(cx + Math.max(0, k), y + Math.max(0, -k) ); ctx.lineTo(cx + Math.min(dayW, k + rowH), y + Math.min(rowH, dayW - k)); ctx.stroke(); } }
+        const txt = x.wo ? 'WO/' + (x.time || '') : cellText(x);
+        if (txt) {
+          ctx.textAlign = 'center'; ctx.fillStyle = col[1];
+          const isCode = x.kind === 'off' || x.kind === 'leave';
+          fitFont(ctx, txt, 700, Math.min(isCode ? 11.5 : 13, rowH * 0.5), FB, dayW - 6, 6);
+          ctx.fillText(txt, cx + dayW / 2, y + rowH / 2 + 0.5);
+        }
+      });
+      ctx.textAlign = 'center'; ctx.fillStyle = PRINT.ink2;
+      fitFont(ctx, s.post || '', 600, Math.min(11.5, rowH * 0.45), FB, postW - 10, 6);
+      ctx.fillText(s.post || '', xPost + postW / 2, y + rowH / 2 + 0.5);
+      y += rowH; hl(y);
+    });
+  });
+  ctx.fillStyle = PRINT.head; ctx.fillRect(x0, y, tableW, totH);
+  ctx.textAlign = 'left'; ctx.fillStyle = PRINT.ink; ctx.font = `700 11px ${FB}`; ctx.fillText('ON DUTY', x0 + 8, y + totH / 2 + 0.5);
+  A.totals.forEach((t, d) => { ctx.textAlign = 'center'; ctx.fillText(String(t), xDays + d * dayW + dayW / 2, y + totH / 2 + 0.5); });
+  y += totH; hl(y);
+  // vertical lines
+  ctx.strokeStyle = PRINT.line; ctx.lineWidth = 0.7;
+  const vl = xx => { ctx.beginPath(); ctx.moveTo(xx, ty); ctx.lineTo(xx, y); ctx.stroke(); };
+  vl(x0); vl(xDays); for (let d = 1; d < n; d++) vl(xDays + d * dayW); vl(xPost); vl(x0 + tableW);
+  ctx.strokeStyle = PRINT.navy; ctx.lineWidth = 1.2; ctx.strokeRect(x0, ty, tableW, y - ty);
+  // rules box
+  let by = y + 12;
+  const rulesH = 132, half = (tableW - 12) / 2;
+  ctx.fillStyle = PRINT.navy; ctx.fillRect(x0, by, tableW, 22);
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = `600 13px ${FA}`; ctx.direction = 'rtl';
+  ctx.fillText('تعليمات العمل', x0 + tableW / 2, by + 11.5); ctx.direction = 'ltr';
+  ctx.textAlign = 'left'; ctx.font = `500 10px ${FB}`; ctx.fillStyle = '#E2C48F'; ctx.fillText('WORK INSTRUCTIONS', x0 + 10, by + 11.5);
+  const rRow = (rulesH - 22) / 6;
+  const rules = S.rules.slice(0, 12);
+  rules.forEach((r, i) => {
+    const col = i < 6 ? 1 : 0, k = i % 6;
+    const bx = x0 + col * (half + 12), byy = by + 22 + k * rRow;
+    ctx.fillStyle = k % 2 ? '#F7F9FC' : '#fff'; ctx.fillRect(bx, byy, half, rRow);
+    ctx.fillStyle = PRINT.band; ctx.fillRect(bx + half - 26, byy, 26, rRow);
+    ctx.fillStyle = PRINT.navy; ctx.textAlign = 'center'; ctx.font = `700 11px ${FB}`; ctx.fillText(String(i + 1), bx + half - 13, byy + rRow / 2 + 0.5);
+    ctx.direction = 'rtl'; ctx.textAlign = 'right'; ctx.fillStyle = PRINT.ink;
+    fitFont(ctx, r, 500, 11.5, FA, half - 40, 6.5);
+    ctx.fillText(r, bx + half - 34, byy + rRow / 2 + 0.5); ctx.direction = 'ltr';
+  });
+  ctx.strokeStyle = PRINT.line; ctx.lineWidth = 0.7; ctx.strokeRect(x0, by + 22, half, rulesH - 22); ctx.strokeRect(x0 + half + 12, by + 22, half, rulesH - 22);
+  // legend, timings, signatures
+  by += rulesH + 8;
+  const lw = tableW * 0.44, tw = tableW * 0.3, sw = tableW - lw - tw - 24;
+  const box = (bx, w, title) => { ctx.strokeStyle = PRINT.line; ctx.strokeRect(bx, by, w, 76); ctx.fillStyle = PRINT.head; ctx.fillRect(bx, by, w, 18); ctx.fillStyle = PRINT.muted; ctx.textAlign = 'left'; ctx.font = `700 9.5px ${FB}`; ctx.fillText(title, bx + 8, by + 9.5); };
+  box(x0, lw, 'ROSTER CODES');
+  CODES.forEach((c, i) => {
+    const colw = lw / 2, cx = x0 + (i % 2) * colw + 8, cy = by + 22 + Math.floor(i / 2) * 18;
+    const col = PRINT.codes[c.cls];
+    ctx.fillStyle = col[0]; ctx.fillRect(cx, cy, 40, 14);
+    ctx.fillStyle = col[1]; ctx.textAlign = 'center'; ctx.font = `700 9.5px ${FB}`; ctx.fillText(c.short, cx + 20, cy + 7.5);
+    ctx.fillStyle = PRINT.ink; ctx.textAlign = 'left'; ctx.font = `500 10.5px ${FB}`; ctx.fillText(c.label, cx + 48, cy + 7.5);
+    ctx.direction = 'rtl'; ctx.textAlign = 'right'; ctx.fillStyle = PRINT.muted; ctx.font = `500 10.5px ${FA}`; ctx.fillText(c.ar, cx + colw - 16, cy + 7.5); ctx.direction = 'ltr';
+  });
+  const tx = x0 + lw + 12;
+  box(tx, tw, 'SHIFT TIMINGS');
+  S.timings.slice(0, 6).forEach((t, i) => {
+    const colw = tw / 2, cx = tx + (i % 2) * colw + 8, cy = by + 22 + Math.floor(i / 2) * 18;
+    ctx.textAlign = 'left'; ctx.fillStyle = PRINT.ink; fitFont(ctx, t.label, 500, 10, FB, colw - 70, 6); ctx.fillText(t.label, cx, cy + 7.5);
+    ctx.textAlign = 'right'; ctx.fillStyle = PRINT.navy; ctx.font = `700 10px ${FB}`; ctx.fillText(t.time, cx + colw - 16, cy + 7.5);
+  });
+  const sx = tx + tw + 12;
+  box(sx, sw, 'APPROVAL');
+  ['Shift supervisor', 'Security manager'].forEach((lbl, i) => {
+    const cy = by + 30 + i * 24;
+    ctx.textAlign = 'left'; ctx.fillStyle = PRINT.ink2; ctx.font = `500 10px ${FB}`; ctx.fillText(lbl, sx + 8, cy);
+    ctx.strokeStyle = '#9AA8BA'; ctx.beginPath(); ctx.moveTo(sx + 104, cy + 6); ctx.lineTo(sx + sw - 10, cy + 6); ctx.stroke();
+  });
+  // footer
+  ctx.textAlign = 'left'; ctx.fillStyle = PRINT.muted; ctx.font = `400 9.5px ${FB}`;
+  ctx.fillText('Security Roster Portal  ·  Developed by ' + (S.org.developer || 'Ms. Amina Qatan'), x0, H - M + 4);
+  ctx.textAlign = 'right'; ctx.fillText('The roster can change daily according to work needs.', x0 + tableW, H - M + 4);
+  return cv;
+}
+function canvasJpeg(cv, q) {
+  const url = cv.toDataURL('image/jpeg', q || 0.93);
+  const bin = atob(url.split(',')[1]); const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function pdfFromJpeg(jpeg, iw, ih, title) {
+  const enc = new TextEncoder();
+  const pageW = 841.89, pageH = 595.28, mg = 14;
+  const sc = Math.min((pageW - 2 * mg) / iw, (pageH - 2 * mg) / ih);
+  const w = iw * sc, h = ih * sc, x = (pageW - w) / 2, y = (pageH - h) / 2;
+  const content = `q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im0 Do Q`;
+  const pdfStr = s => '(' + String(s).replace(/[\\()]/g, m => '\\' + m).replace(/[^\x20-\x7e]/g, '-') + ')';
+  const parts = [], offsets = [];
+  let size = 0;
+  const push = chunk => { const b = typeof chunk === 'string' ? enc.encode(chunk) : chunk; parts.push(b); size += b.length; };
+  push('%PDF-1.4\n'); push(new Uint8Array([0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));
+  const obj = (i, body) => { offsets[i] = size; push(i + ' 0 obj\n'); body(); push('\nendobj\n'); };
+  obj(1, () => push('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2, () => push('<< /Type /Pages /Kids [3 0 R] /Count 1 >>'));
+  obj(3, () => push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`));
+  obj(4, () => { push(`<< /Type /XObject /Subtype /Image /Width ${iw} /Height ${ih} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`); push(jpeg); push('\nendstream'); });
+  obj(5, () => push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`));
+  obj(6, () => push(`<< /Title ${pdfStr(title)} /Author ${pdfStr(S.org.developer || 'Security Roster Portal')} /Creator (Security Roster Portal) >>`));
+  const xref = size;
+  let x2 = 'xref\n0 7\n0000000000 65535 f \n';
+  for (let i = 1; i <= 6; i++) x2 += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+  push(x2 + `trailer\n<< /Size 7 /Root 1 0 R /Info 6 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  const out = new Uint8Array(size); let o = 0; parts.forEach(b => { out.set(b, o); o += b.length; });
+  return out;
+}
+async function buildPdf(p) {
+  const cv = await renderSheetCanvas(p);
+  return pdfFromJpeg(canvasJpeg(cv, 0.93), cv.width, cv.height, 'Security Roster ' + periodLabel(p, true));
+}
+
+/* ---------- XLSX (hand-built, no library) ---------- */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files) {
+  const enc = new TextEncoder(), chunks = [], central = [];
+  let off = 0;
+  const now = new Date(), dosT = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1), dosD = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  files.forEach(f => {
+    const name = enc.encode(f.name), data = typeof f.data === 'string' ? enc.encode(f.data) : f.data, crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, dosT, true); h.setUint16(12, dosD, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+    h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    chunks.push(new Uint8Array(h.buffer), name, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, dosT, true); c.setUint16(14, dosD, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+    c.setUint16(28, name.length, true); c.setUint16(30, 0, true); c.setUint16(32, 0, true); c.setUint16(34, 0, true); c.setUint16(36, 0, true); c.setUint32(38, 0, true); c.setUint32(42, off, true);
+    central.push(new Uint8Array(c.buffer), name);
+    off += 30 + name.length + data.length;
+  });
+  const cdSize = central.reduce((a, b) => a + b.length, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cdSize, true); e.setUint32(16, off, true);
+  const all = chunks.concat(central, [new Uint8Array(e.buffer)]);
+  const out = new Uint8Array(all.reduce((a, b) => a + b.length, 0)); let o = 0; all.forEach(b => { out.set(b, o); o += b.length; });
+  return out;
+}
+const xe = s => String(s == null ? '' : s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const colName = i => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+function XStyles() {
+  const fonts = ['<font><sz val="10"/><name val="Calibri"/><family val="2"/></font>'], fills = ['<fill><patternFill patternType="none"/></fill>', '<fill><patternFill patternType="gray125"/></fill>'];
+  const borders = ['<border><left/><right/><top/><bottom/><diagonal/></border>', '<border><left style="thin"><color rgb="FFB8C4D4"/></left><right style="thin"><color rgb="FFB8C4D4"/></right><top style="thin"><color rgb="FFB8C4D4"/></top><bottom style="thin"><color rgb="FFB8C4D4"/></bottom><diagonal/></border>'];
+  const xfs = ['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'], cache = {};
+  const idx = (arr, xml) => { let i = arr.indexOf(xml); if (i < 0) { arr.push(xml); i = arr.length - 1; } return i; };
+  return {
+    get(o) {
+      const key = JSON.stringify(o); if (cache[key] != null) return cache[key];
+      const f = idx(fonts, `<font>${o.b ? '<b/>' : ''}${o.i ? '<i/>' : ''}<sz val="${o.sz || 10}"/><color rgb="FF${(o.color || '13233A').replace('#', '')}"/><name val="${o.font || 'Calibri'}"/><family val="2"/></font>`);
+      const fi = o.fill ? idx(fills, `<fill><patternFill patternType="solid"><fgColor rgb="FF${o.fill.replace('#', '')}"/><bgColor indexed="64"/></patternFill></fill>`) : 0;
+      const b = o.border === false ? 0 : 1;
+      const al = `<alignment horizontal="${o.h || 'center'}" vertical="center"${o.wrap ? ' wrapText="1"' : ''}${o.rtl ? ' readingOrder="2"' : ''}/>`;
+      xfs.push(`<xf numFmtId="0" fontId="${f}" fillId="${fi}" borderId="${b}" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${al}</xf>`);
+      return (cache[key] = xfs.length - 1);
+    },
+    xml() {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="${fonts.length}">${fonts.join('')}</fonts><fills count="${fills.length}">${fills.join('')}</fills><borders count="${borders.length}">${borders.join('')}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${xfs.length}">${xfs.join('')}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+    }
+  };
+}
+function XSheet() {
+  const rows = {}, merges = [], heights = {};
+  return {
+    set(r, c, v, s) { (rows[r] = rows[r] || {})[c] = { v, s }; },
+    merge(r1, c1, r2, c2) { merges.push(colName(c1) + r1 + ':' + colName(c2) + r2); },
+    height(r, h) { heights[r] = h; },
+    xml(opts) {
+      const rk = Object.keys(rows).map(Number).sort((a, b) => a - b);
+      const maxR = Math.max(1, ...rk);
+      let sd = '';
+      for (let r = 1; r <= maxR; r++) {
+        const cells = rows[r];
+        if (!cells && !heights[r]) continue;
+        const ck = cells ? Object.keys(cells).map(Number).sort((a, b) => a - b) : [];
+        sd += `<row r="${r}"${heights[r] ? ` ht="${heights[r]}" customHeight="1"` : ''}>` + ck.map(c => {
+          const { v, s } = cells[c], ref = colName(c) + r;
+          if (typeof v === 'number') return `<c r="${ref}" s="${s || 0}"><v>${v}</v></c>`;
+          if (v === '' || v == null) return `<c r="${ref}" s="${s || 0}"/>`;
+          return `<c r="${ref}" s="${s || 0}" t="inlineStr"><is><t xml:space="preserve">${xe(v)}</t></is></c>`;
+        }).join('') + '</row>';
+      }
+      const cols = opts.cols.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('');
+      const pane = opts.freeze ? `<pane xSplit="${opts.freeze[0]}" ySplit="${opts.freeze[1]}" topLeftCell="${colName(opts.freeze[0]) + (opts.freeze[1] + 1)}" activePane="bottomRight" state="frozen"/><selection pane="bottomRight"/>` : '';
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:${colName(opts.cols.length - 1)}${maxR}"/><sheetViews><sheetView workbookViewId="0"${opts.tabSelected ? ' tabSelected="1"' : ''}${opts.grid === false ? ' showGridLines="0"' : ''}>${pane}</sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/><cols>${cols}</cols><sheetData>${sd}</sheetData>${merges.length ? `<mergeCells count="${merges.length}">${merges.map(m => `<mergeCell ref="${m}"/>`).join('')}</mergeCells>` : ''}<printOptions horizontalCentered="1"/><pageMargins left="0.25" right="0.25" top="0.3" bottom="0.3" header="0.15" footer="0.15"/><pageSetup paperSize="9" orientation="${opts.landscape ? 'landscape' : 'portrait'}" fitToWidth="1" fitToHeight="${opts.fitH === 0 ? 0 : 1}"/></worksheet>`;
+    },
+    maxRow() { return Math.max(1, ...Object.keys(rows).map(Number)); }
+  };
+}
+function buildXlsx(p) {
+  const A = analyze(p), n = A.dates.length, st = XStyles(), sh = XSheet(), lastC = n + 1;
+  const X = {
+    title: st.get({ b: true, sz: 15, color: 'FFFFFF', fill: '0C2D5B', h: 'left', font: 'Calibri' }),
+    sub: st.get({ sz: 10, color: '0C2D5B', fill: 'F6EEDD', h: 'left' }),
+    hd: st.get({ b: true, sz: 10, fill: 'EEF2F7' }), hdW: st.get({ b: true, sz: 10, fill: 'F6EEDD' }),
+    hdL: st.get({ b: true, sz: 9, color: '6B7A8F', fill: 'EEF2F7', h: 'left' }),
+    band: st.get({ b: true, sz: 10, color: '0C2D5B', fill: 'E3EBF6', h: 'left' }), bandN: st.get({ sz: 9, color: '44546B', fill: 'E3EBF6' }), bandLow: st.get({ b: true, sz: 9, color: 'B3261E', fill: 'E3EBF6' }),
+    name: st.get({ b: true, sz: 10, h: 'left' }), post: st.get({ sz: 10, color: '44546B' }),
+    tot: st.get({ b: true, sz: 10, fill: 'EEF2F7' }), totL: st.get({ b: true, sz: 10, fill: 'EEF2F7', h: 'left' }),
+    rule: st.get({ sz: 10, h: 'right', wrap: true, rtl: true, font: 'Arial' }), ruleN: st.get({ b: true, sz: 10, color: '0C2D5B', fill: 'E3EBF6' }),
+    ruleH: st.get({ b: true, sz: 11, color: 'FFFFFF', fill: '0C2D5B', rtl: true, font: 'Arial' }),
+    lab: st.get({ sz: 9, h: 'left', wrap: true }), labAr: st.get({ sz: 9, color: '6B7A8F', h: 'right', rtl: true, wrap: true, font: 'Arial' }),
+    tim: st.get({ b: true, sz: 9, color: '0C2D5B' }), foot: st.get({ i: true, sz: 8, color: '6B7A8F', h: 'left', border: false })
+  };
+  const cellStyle = {};
+  Object.entries(PRINT.codes).forEach(([k, c]) => { cellStyle[k] = st.get({ b: true, sz: 10, fill: c[0].replace('#', ''), color: c[1].replace('#', '') }); });
+  const logoPng = /^data:image\/png;base64,/.test(S.org.logo || '') ? Uint8Array.from(atob(S.org.logo.split(',')[1]), ch => ch.charCodeAt(0)) : null;
+  const t0 = logoPng ? 1 : 0;
+  if (logoPng) { const wh = st.get({ fill: 'FFFFFF' }); sh.set(1, 0, '', wh); sh.set(2, 0, '', wh); sh.merge(1, 0, 2, 0); }
+  sh.set(1, t0, `Security Department Duty Roster · ${periodLabel(p, true)}`, X.title); sh.merge(1, t0, 1, lastC); sh.height(1, logoPng ? 32 : 26);
+  for (let c = t0 + 1; c <= lastC; c++) sh.set(1, c, '', X.title);
+  sh.set(2, t0, `${S.org.property} · ${S.org.dept} · Printed ${fmtLong(todayYmd())}`, X.sub); sh.merge(2, t0, 2, lastC); if (logoPng) sh.height(2, 22);
+  for (let c = t0 + 1; c <= lastC; c++) sh.set(2, c, '', X.sub);
+  sh.set(3, 0, 'DATE', X.hdL); sh.set(4, 0, 'DAY', X.hdL);
+  A.dates.forEach((dt, d) => { const x = dparts(dt), s = x.w === 5 || x.w === 6 ? X.hdW : X.hd; sh.set(3, d + 1, x.d + '-' + MON[x.m], s); sh.set(4, d + 1, DAYS[x.w], s); });
+  sh.set(3, lastC, 'POST', X.hd); sh.set(4, lastC, '', X.hd); sh.merge(3, lastC, 4, lastC);
+  let r = 5;
+  A.groups.forEach(g => {
+    const need = +g.sec.need || 0;
+    sh.set(r, 0, g.sec.name.toUpperCase(), X.band);
+    A.dates.forEach((dt, d) => { const h = A.daily[d][g.sec.id] || 0; sh.set(r, d + 1, h, need && h < need ? X.bandLow : X.bandN); });
+    sh.set(r, lastC, need ? 'min ' + need : '', X.bandN); sh.height(r, 15); r++;
+    g.members.forEach(s => {
+      const row = ensureRow(p, s.id);
+      sh.set(r, 0, s.name, X.name);
+      row.forEach((v, d) => { const x = pv(v); sh.set(r, d + 1, x.wo ? 'WO/' + (x.time || '') : cellText(x), cellStyle[cellClass(x)] || cellStyle['c-day']); });
+      sh.set(r, lastC, s.post || '', X.post); sh.height(r, 19); r++;
+    });
+  });
+  sh.set(r, 0, 'ON DUTY', X.totL); A.totals.forEach((t, d) => sh.set(r, d + 1, t, X.tot)); sh.set(r, lastC, '', X.tot); r += 2;
+  // rules: right block 1-6, left block 7-12 (same layout as the paper sheet)
+  const mid = Math.floor((lastC + 1) / 2);
+  sh.set(r, 0, 'تعليمات العمل · Work instructions', X.ruleH); sh.merge(r, 0, r, lastC); for (let c = 1; c <= lastC; c++) sh.set(r, c, '', X.ruleH); sh.height(r, 18); r++;
+  for (let k = 0; k < 6; k++) {
+    const R = S.rules[k], L = S.rules[k + 6];
+    sh.set(r, 0, L || '', X.rule); for (let c = 1; c < mid - 1; c++) sh.set(r, c, '', X.rule); sh.merge(r, 0, r, mid - 2); sh.set(r, mid - 1, L ? k + 7 : '', X.ruleN);
+    sh.set(r, mid, R || '', X.rule); for (let c = mid + 1; c < lastC; c++) sh.set(r, c, '', X.rule); sh.merge(r, mid, r, lastC - 1); sh.set(r, lastC, R ? k + 1 : '', X.ruleN);
+    sh.height(r, 30); r++;
+  }
+  r++;
+  // legend and timings: side by side on a wide sheet, stacked on a short period
+  const side = mid >= 8 && mid + 7 <= lastC;
+  const tRows = Math.ceil(S.timings.length / 2);
+  for (let k = 0; k < 3; k++) {
+    for (let j = 0; j < 2; j++) {
+      const c = CODES[k * 2 + j]; if (!c) continue;
+      const base = j * 4;
+      sh.set(r, base, c.short, cellStyle[c.cls]); sh.set(r, base + 1, c.label, X.lab); sh.set(r, base + 2, '', X.lab); sh.merge(r, base + 1, r, base + 2); sh.set(r, base + 3, c.ar, X.labAr);
+    }
+    sh.height(r, 24); r++;
+  }
+  let tr0 = side ? r - 3 : r + 1;
+  for (let k = 0; k < tRows; k++) {
+    for (let j = 0; j < 2; j++) {
+      const t = S.timings[k * 2 + j]; if (!t) continue;
+      const base = (side ? mid : 0) + j * 4;
+      sh.set(tr0, base, t.label, X.lab); sh.set(tr0, base + 1, '', X.lab); sh.set(tr0, base + 2, '', X.lab); sh.merge(tr0, base, tr0, base + 2); sh.set(tr0, base + 3, t.time, X.tim);
+    }
+    if (!side) sh.height(tr0, 18);
+    tr0++;
+  }
+  r = Math.max(r, tr0);
+  sh.set(r + 1, 0, 'Security Roster Portal · Developed by ' + (S.org.developer || 'Ms. Amina Qatan'), X.foot);
+  let sheet1 = sh.xml({ cols: [17].concat(Array(n).fill(7.4), [12]), landscape: true, freeze: [1, 4], tabSelected: true, grid: false });
+  let drawingXml = '';
+  if (logoPng) {
+    const dvl = new DataView(logoPng.buffer), iw = dvl.getUint32(16), ih = dvl.getUint32(20);
+    const EMU = 9525, hPx = 64, wPx = Math.round(hPx * iw / ih), colPx = 124;
+    const cx = wPx * EMU, cy = hPx * EMU, offX = Math.max(0, Math.round((colPx - wPx) / 2)) * EMU, offY = 4 * EMU;
+    drawingXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:oneCellAnchor><xdr:from><xdr:col>0</xdr:col><xdr:colOff>${offX}</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>${offY}</xdr:rowOff></xdr:from><xdr:ext cx="${cx}" cy="${cy}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="Logo" descr="${xe(S.org.property)}"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>`;
+    sheet1 = sheet1.replace('</worksheet>', '<drawing r:id="rId1"/></worksheet>');
+  }
+  const lastRow1 = sh.maxRow();
+  // Summary sheet
+  const s2 = XSheet();
+  const hd = st.get({ b: true, sz: 10, fill: '0C2D5B', color: 'FFFFFF' }), tx = st.get({ sz: 10, h: 'left' }), nm = st.get({ sz: 10 }), low = st.get({ b: true, sz: 10, color: 'B3261E' }), ok = st.get({ sz: 10, color: '1D7A47' });
+  s2.set(1, 0, `Summary · ${periodLabel(p, true)}`, X.title); s2.merge(1, 0, 1, 10); for (let c = 1; c <= 10; c++) s2.set(1, c, '', X.title); s2.height(1, 24);
+  const h2 = ['Name', 'Team', 'Post', 'Duty days', 'Night shifts', 'Days off', 'AL', 'PH', 'PD', 'C/OFF', 'Not on roster'];
+  h2.forEach((t, c) => s2.set(3, c, t, hd));
+  let rr = 4;
+  A.people.forEach(pp => {
+    const row = ensureRow(p, pp.id), cnt = { AL: 0, PH: 0, PD: 0, 'C/OFF': 0 };
+    row.forEach(v => { const x = pv(v); if (x.kind === 'leave') cnt[x.code]++; });
+    const sec = secById(pp.sec);
+    [pp.name, sec ? sec.name : '', pp.post || '', pp.duty, pp.night, pp.off, cnt.AL, cnt.PH, cnt.PD, cnt['C/OFF'], pp.none].forEach((v, c) => s2.set(rr, c, v, c < 3 ? tx : nm));
+    rr++;
+  });
+  rr += 1;
+  const h3 = ['Date', 'Day'].concat(A.groups.map(g => g.sec.name), ['Total on duty', 'Minimum', 'Status']);
+  h3.forEach((t, c) => s2.set(rr, c, t, hd)); rr++;
+  A.dates.forEach((dt, d) => {
+    const x = dparts(dt), short = A.gaps.filter(g => g.date === dt).length;
+    s2.set(rr, 0, x.d + '-' + MON[x.m] + '-' + x.y, tx); s2.set(rr, 1, DAYS[x.w], nm);
+    A.groups.forEach((g, i) => s2.set(rr, 2 + i, A.daily[d][g.sec.id] || 0, nm));
+    s2.set(rr, 2 + A.groups.length, A.totals[d], nm); s2.set(rr, 3 + A.groups.length, A.needTotal, nm);
+    s2.set(rr, 4 + A.groups.length, short ? short + ' team(s) short' : 'Covered', short ? low : ok);
+    rr++;
+  });
+  const sheet2 = s2.xml({ cols: [14, 20, 12, 10, 10, 10, 8, 8, 8, 8, 12].concat(Array(Math.max(0, h3.length - 11)).fill(12)), landscape: false, fitH: 0 });
+  const wb = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets><sheet name="Roster" sheetId="1" r:id="rId1"/><sheet name="Summary" sheetId="2" r:id="rId2"/></sheets><definedNames><definedName name="_xlnm.Print_Area" localSheetId="0">Roster!$A$1:$${colName(lastC)}$${lastRow1}</definedName></definedNames></workbook>`;
+  const files = [
+    { name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>' + (logoPng ? '<Default Extension="png" ContentType="image/png"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>' : '') + '</Types>' },
+    { name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>' },
+    { name: 'docProps/core.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xe('Security Roster ' + periodLabel(p, true))}</dc:title><dc:creator>${xe(S.org.developer || 'Security Roster Portal')}</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</dcterms:created></cp:coreProperties>` },
+    { name: 'docProps/app.xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Security Roster Portal</Application></Properties>' },
+    { name: 'xl/workbook.xml', data: wb },
+    { name: 'xl/_rels/workbook.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>' },
+    { name: 'xl/worksheets/sheet1.xml', data: sheet1 },
+    { name: 'xl/worksheets/sheet2.xml', data: sheet2 },
+    { name: 'xl/styles.xml', data: st.xml() }
+  ];
+  if (logoPng) files.push(
+    { name: 'xl/worksheets/_rels/sheet1.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>' },
+    { name: 'xl/drawings/drawing1.xml', data: drawingXml },
+    { name: 'xl/drawings/_rels/drawing1.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.png"/></Relationships>' },
+    { name: 'xl/media/image1.png', data: logoPng });
+  return zipStore(files);
+}
+
+async function offerFile(filename, bytes, mime) {
+  const blob = new Blob([bytes], { type: mime });
+  if (IN_CLAUDE) {
+    let dl = null;
+    try { dl = await window.claude.use('downloads'); } catch (e) { dl = null; }
+    if (!dl) { toast('Downloads are not available in this view.'); return; }
+    try { const r = await dl.save({ filename, data: blob }); if (r && r.status === 'saved') toast('Saved ' + filename + '.'); }
+    catch (e) {
+      const c = e && e.code;
+      if (c === 'declined') return;
+      if (c === 'rate_limited') toast('Too many downloads at once. Try again in a moment.');
+      else toast('This file could not be saved here (' + (c || 'error') + ').');
+    }
+    return;
+  }
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  toast('Downloaded ' + filename + '.');
+}
+async function exportXlsx() {
+  const p = curPeriod(); if (!p) return;
+  try { await offerFile(`Security-Roster_${fileStamp(p)}.xlsx`, buildXlsx(p), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }
+  catch (e) { toast('The Excel file could not be built: ' + (e && e.message || e)); }
+}
+async function exportPdf() {
+  const p = curPeriod(); if (!p) return;
+  toast('Preparing the one-page PDF…');
+  try { await offerFile(`Security-Roster_${fileStamp(p)}.pdf`, await buildPdf(p), 'application/pdf'); }
+  catch (e) { toast('The PDF could not be built: ' + (e && e.message || e)); }
+}
+async function openPrint() {
+  const p = curPeriod(); if (!p) return;
+  openModal({ type: 'print', img: null, focus: false });
+  try {
+    const cv = await renderSheetCanvas(p);
+    if (ui.modal && ui.modal.type === 'print') { ui.modal.img = cv.toDataURL('image/png'); renderOverlay(); }
+  } catch (e) { toast('The print preview could not be built.'); }
+}
+function printNow() {
+  const m = ui.modal; if (!m || !m.img) return;
+  let area = document.getElementById('print-area');
+  if (!area) { area = document.createElement('div'); area.id = 'print-area'; document.body.appendChild(area); }
+  area.innerHTML = `<img src="${m.img}" alt="">`;
+  const img = area.querySelector('img');
+  const go = () => { try { window.print(); } catch (e) { toast('Printing is not available here. Save the PDF and print it.'); } };
+  if (img.complete) setTimeout(go, 50); else img.onload = () => setTimeout(go, 50);
+}
+
+/* ================= events ================= */
+function setCell(sid, d, v) {
+  const p = curPeriod(); if (!p) return;
+  const row = ensureRow(p, sid);
+  if (row[d] === v) return;
+  snapshot(); row[d] = v; touch();
+}
+function applyValue(v) {
+  const m = ui.modal; if (!m || m.type !== 'cell') return;
+  const isTime = toMin(v) != null;
+  const wo = $('#wo-toggle') && $('#wo-toggle').checked;
+  setCell(m.s, m.d, isTime && wo ? 'WO/' + v : v);
+  const p = curPeriod();
+  render();
+  if (ui.autoNext && m.d < p.days - 1) { ui.modal = { type: 'cell', s: m.s, d: m.d + 1, focus: false }; }
+  else ui.modal = { type: 'cell', s: m.s, d: m.d, focus: false };
+  renderOverlay();
+}
+app.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t || !app.contains(t)) return;
+  const act = t.dataset.act;
+  switch (act) {
+    case 'toggle-pw': { const i = $('#lg-pass'); i.type = i.type === 'password' ? 'text' : 'password'; t.textContent = i.type === 'password' ? 'Show' : 'Hide'; break; }
+    case 'view-only': ui.session = { u: '', name: 'Guest', role: 'VIEWER' }; ui.loginError = ''; ui.tab = 'roster'; render(); break;
+    case 'logout':
+      if (isAdmin() && IN_CLAUDE && ui.dirty && !ui.readOnly) { openModal({ type: 'confirm', title: 'Sign out without saving?', text: 'Your unsaved changes stay on this device, and you can restore them the next time you sign in.', ok: 'Sign out', danger: true, run: () => { ui.session = null; ui.brush = null; render(); } }); break; }
+      ui.session = null; ui.brush = null; ui.modal = null; render(); break;
+    case 'tab': ui.tab = t.dataset.tab; ui.brush = null; ui.modal = null; render(); window.scrollTo(0, 0); break;
+    case 'save': save(); break;
+    case 'period-step': {
+      const list = sortedPeriods(), p = curPeriod(); if (!p) break;
+      const i = list.findIndex(x => x.id === p.id) + (+t.dataset.dir);
+      if (i >= 0 && i < list.length) { ui.periodId = list[i].id; render(); }
+      else toast(+t.dataset.dir > 0 ? (isAdmin() ? 'This is the latest period. Create the next one in Auto-distribute.' : 'This is the latest period.') : 'This is the first period.');
+      break;
+    }
+    case 'brush': { const v = t.dataset.v; ui.brush = ui.brush === v ? null : v; render(); break; }
+    case 'undo': undo(); break;
+    case 'cell': {
+      const sid = t.dataset.s, d = +t.dataset.d;
+      if (ui.brush != null) { setCell(sid, d, ui.brush); render(); const tr = $(`tr[data-row="${CSS.escape(sid)}"]`); if (tr) { tr.classList.remove('flash'); void tr.offsetWidth; tr.classList.add('flash'); } }
+      else openModal({ type: 'cell', s: sid, d });
+      break;
+    }
+    case 'person': openModal({ type: 'person', s: t.dataset.s }); break;
+    case 'goto-staff': ui.modal = null; ui.tab = 'staff'; render(); break;
+    case 'close-modal': closeModal(); break;
+    case 'confirm-ok': { const m = ui.modal; ui.modal = null; renderOverlay(); if (m && m.run) m.run(); break; }
+    case 'set': applyValue(t.dataset.v); break;
+    case 'set-other': { const h = $('#ot-h').value, mm = $('#ot-m').value, ap = $('#ot-ap').value; applyValue(normTime(h + (mm !== '00' ? ':' + mm : '') + ap)); break; }
+    case 'edit-step': { const m = ui.modal, p = curPeriod(); if (!m || !p) break; const d = clamp(m.d + (+t.dataset.dir), 0, p.days - 1); ui.modal = { type: 'cell', s: m.s, d, focus: false }; renderOverlay(); break; }
+    case 'export-xlsx': exportXlsx(); break;
+    case 'export-pdf': exportPdf(); break;
+    case 'print': openPrint(); break;
+    case 'print-now': printNow(); break;
+    case 'dist-mode': ui.distMode = t.dataset.mode; render(); break;
+    case 'fixed-day': {
+      const sec = secById(t.dataset.sec), day = +t.dataset.day; if (!sec) break;
+      change(() => { const f = new Set(sec.fixedOff || []); f.has(day) ? f.delete(day) : f.add(day); sec.fixedOff = Array.from(f).sort(); });
+      break;
+    }
+    case 'distribute': runDistribute(); break;
+    case 'staff-move': {
+      const s = S.staff.find(x => x.id === t.dataset.s); if (!s) break;
+      const same = S.staff.filter(x => x.section === s.section && x.active !== false), i = same.indexOf(s), j = i + (+t.dataset.dir);
+      if (j < 0 || j >= same.length) break;
+      change(() => { const a = S.staff.indexOf(s), b = S.staff.indexOf(same[j]); [S.staff[a], S.staff[b]] = [S.staff[b], S.staff[a]]; });
+      break;
+    }
+    case 'staff-remove': {
+      const s = S.staff.find(x => x.id === t.dataset.s); if (!s) break;
+      openModal({ type: 'confirm', title: `Remove ${s.name} from the roster?`, text: `${s.name} will not appear in new periods. Shifts already entered stay in earlier periods, and you can put them back later.`, ok: 'Remove', danger: true, run: () => change(() => { s.active = false; }) });
+      break;
+    }
+    case 'staff-restore': { const s = S.staff.find(x => x.id === t.dataset.s); if (s) change(() => { s.active = true; }); break; }
+    case 'rule-add': change(() => S.rules.push('')); break;
+    case 'rule-del': { const i = +t.dataset.i; change(() => S.rules.splice(i, 1)); break; }
+    case 'timing-add': change(() => S.timings.push({ label: 'New duty', time: '' })); break;
+    case 'timing-del': { const i = +t.dataset.i; change(() => S.timings.splice(i, 1)); break; }
+    case 'user-del': { const u = t.dataset.u; const usr = S.users.find(x => x.u === u); if (!usr) break; openModal({ type: 'confirm', title: `Remove ${usr.name}?`, text: `${usr.name} will no longer be able to sign in as admin.`, ok: 'Remove', danger: true, run: () => change(() => { S.users = S.users.filter(x => x.u !== u); }) }); break; }
+    case 'backup': { const stamp = todayYmd(); offerFile(`security-roster-backup-${stamp}.json`, new TextEncoder().encode(JSON.stringify(S, null, 1)), 'application/json'); break; }
+    case 'period-delete': {
+      const p = curPeriod(); if (!p) break;
+      openModal({ type: 'confirm', title: `Delete ${periodLabel(p)}?`, text: 'Every shift in this period will be removed. You can undo this right after.', ok: 'Delete period', danger: true, run: () => { change(() => { S.periods = S.periods.filter(x => x.id !== p.id); ui.periodId = null; }); toast('Period deleted.', { label: 'Undo', fn: undo }); } });
+      break;
+    }
+    case 'draft-restore': if (pendingDraft) { snapshot(); S = pendingDraft; pendingDraft = null; touch(true); render(); toast('Your earlier changes are back. Press Save changes to keep them.'); } break;
+    case 'logo-remove': change(() => { S.org.logo = ''; }); toast('Logo removed.', { label: 'Undo', fn: undo }); break;
+    case 'draft-discard': pendingDraft = null; LS.del(K_DRAFT); render(); break;
+  }
+});
+app.addEventListener('submit', e => {
+  const f = e.target; e.preventDefault();
+  if (f.id === 'login-form') {
+    const u = $('#lg-user').value, pw = $('#lg-pass').value;
+    const user = S.users.find(x => x.u === normUser(u));
+    if (!u.trim() || !pw) { ui.loginError = 'Enter your user ID and password.'; }
+    else if (!user || user.hash !== passHash(u, pw)) { ui.loginError = 'That user ID and password do not match. Check the spelling and try again.'; }
+    else { ui.session = { u: user.u, name: user.name, role: user.role || 'ADMIN' }; ui.loginError = ''; ui.tab = 'roster'; }
+    render();
+    if (ui.loginError) { const i = $('#lg-user'); if (i) { i.value = u; $('#lg-pass').focus(); } }
+  } else if (f.id === 'add-staff') {
+    const name = $('#ns-name').value.trim(); if (!name) { $('#ns-name').focus(); return; }
+    const id = 's' + Date.now().toString(36);
+    change(() => S.staff.push({ id, name, section: $('#ns-sec').value, post: $('#ns-post').value.trim(), shift: $('#ns-shift').value.trim() || '9am', active: true }));
+    toast(name + ' added to the roster.');
+  } else if (f.id === 'pw-form') {
+    const me = S.users.find(x => x.u === ui.session.u), msg = $('#pw-msg'), cur = $('#pw-cur').value, nw = $('#pw-new').value;
+    msg.hidden = false;
+    if (!me || me.hash !== passHash(me.u, cur)) { msg.className = 'form-error'; msg.textContent = 'The current password is not right.'; return; }
+    if (nw.length < 6) { msg.className = 'form-error'; msg.textContent = 'Use at least 6 characters for the new password.'; return; }
+    change(() => { me.hash = passHash(me.u, nw); }, { render: false });
+    $('#pw-cur').value = ''; $('#pw-new').value = '';
+    msg.className = 'form-ok'; msg.textContent = IN_CLAUDE ? 'Password changed. Press Save changes to keep it.' : 'Password changed.';
+  } else if (f.id === 'user-form') {
+    const name = $('#nu-name').value.trim(), pw = $('#nu-pass').value, msg = $('#nu-msg'); msg.hidden = false;
+    if (!name || pw.length < 6) { msg.className = 'form-error'; msg.textContent = 'Enter a name and a password of at least 6 characters.'; return; }
+    if (S.users.some(x => x.u === normUser(name))) { msg.className = 'form-error'; msg.textContent = 'There is already an admin with that name.'; return; }
+    change(() => S.users.push({ u: normUser(name), name, role: 'ADMIN', hash: passHash(name, pw) }));
+    toast(name + ' can now sign in as admin.');
+  }
+});
+app.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'period-sel') { ui.periodId = t.value; render(); return; }
+  if (t.id === 'auto-next') { ui.autoNext = t.checked; return; }
+  if (t.id === 'wo-toggle') { if (ui.modal) ui.modal.wo = t.checked; return; }
+  if (t.id === 'dist-start') { if (t.value) { ui.distStart = t.value; render(); } return; }
+  if (t.id === 'dist-len') { ui.distLen = t.value; render(); return; }
+  if (t.id === 'keep-leave') { ui.keepLeave = t.checked; return; }
+  if (t.id === 'keep-entered') { ui.keepEntered = t.checked; return; }
+  if (t.id === 'logo-file') {
+    const file = t.files && t.files[0]; t.value = '';
+    if (!file) return;
+    fileToLogo(file).then(url => { change(() => { S.org.logo = url; }); toast('Logo updated.'); }).catch(() => toast('That file could not be read as an image. Use a PNG or JPG.'));
+    return;
+  }
+  if (t.id === 'restore-file') {
+    const file = t.files && t.files[0]; if (!file) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      const d = parseJSON(rd.result);
+      if (!validData(d)) { toast('That file is not a Security Roster backup.'); return; }
+      openModal({ type: 'confirm', title: 'Replace the roster with this backup?', text: `The backup holds ${d.staff.length} staff and ${d.periods.length} periods. Everything in the portal now is replaced. You can undo this right after.`, ok: 'Restore backup', danger: true, run: () => { change(() => { S = d; ui.periodId = null; }); toast('Backup restored.', { label: 'Undo', fn: undo }); } });
+    };
+    rd.readAsText(file); t.value = '';
+    return;
+  }
+  if (t.dataset.sec && t.dataset.field) {
+    const sec = secById(t.dataset.sec); if (!sec) return;
+    const f = t.dataset.field;
+    change(() => { sec[f] = t.type === 'checkbox' ? t.checked : (f === 'mode' ? t.value : +t.value); }, { render: f === 'mode' });
+    return;
+  }
+  if (t.dataset.staff && t.dataset.field) {
+    const s = S.staff.find(x => x.id === t.dataset.staff); if (!s) return;
+    const f = t.dataset.field, v = t.value.trim();
+    if (f === 'name' && !v) { t.value = s.name; return; }
+    change(() => { s[f] = f === 'shift' ? v.split(/[,;]+/).map(x => x.trim()).filter(Boolean).map(normTime).join(', ') : v; }, { render: f === 'section' });
+    return;
+  }
+  if (t.dataset.rule != null) { const i = +t.dataset.rule; change(() => { S.rules[i] = t.value.trim(); }, { render: false }); return; }
+  if (t.dataset.timing != null) { const i = +t.dataset.timing; change(() => { S.timings[i][t.dataset.field] = t.value.trim(); }, { render: false }); return; }
+});
+app.addEventListener('input', e => {
+  if (e.target.id !== 'staff-filter') return;
+  const q = e.target.value.trim().toLowerCase();
+  $$('tr[data-row]').forEach(tr => { tr.hidden = !!q && !tr.dataset.name.includes(q); });
+});
+app.addEventListener('pointermove', e => { const t = e.target.closest && e.target.closest('[data-tip]'); if (t) showTip(t, e.clientX, e.clientY); else hideTip(); });
+app.addEventListener('pointerleave', hideTip);
+app.addEventListener('pointerdown', e => { const t = e.target.closest && e.target.closest('[data-tip]'); if (t && e.pointerType !== 'mouse') showTip(t, e.clientX, e.clientY); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (ui.modal) closeModal(); else if (ui.brush != null) { ui.brush = null; render(); } }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && isAdmin() && IN_CLAUDE && ui.dirty) { e.preventDefault(); save(); }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && isAdmin() && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); undo(); }
+});
+let rz = null;
+window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { const p = curPeriod(); if (ui.session && ui.tab === 'analysis' && p) drawCharts(p); }, 150); });
+
+/* expose pure functions for testing and the Oracle comparison */
+window.HSR = { sha256, passHash, pv, distribute, analyze, buildXlsx, buildPdf, renderSheetCanvas, periodLabel, buildDocument, embedded: EMBEDDED, get data() { return S; } };
+
+render();
+})();
+</script></body></html>
